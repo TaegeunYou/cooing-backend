@@ -1,9 +1,6 @@
-package com.alpha.kooing.service
+package com.alpha.kooing.config.auth
 
-import com.alpha.kooing.config.auth.OAuth2CustomUser
-import com.alpha.kooing.config.auth.OAuthAttributes
-import com.alpha.kooing.domain.user.Role
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import com.alpha.kooing.User.Role
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest

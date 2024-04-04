@@ -1,4 +1,4 @@
-package com.alpha.kooing.domain.user
+package com.alpha.kooing.User
 
 enum class Role(key: String, role: String) {
     GUEST("ROLE_GUSET", "guest"),

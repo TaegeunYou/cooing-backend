@@ -1,4 +1,4 @@
-package com.alpha.kooing.domain.user
+package com.alpha.kooing.User
 
 class User(
     val email:String,
