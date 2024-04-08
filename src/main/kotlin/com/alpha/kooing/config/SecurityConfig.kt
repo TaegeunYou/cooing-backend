@@ -1,8 +1,8 @@
 package com.alpha.kooing.config
 
-import com.alpha.kooing.config.auth.OAuth2LoginSuccessHandler
+import com.alpha.kooing.config.auth.CustomOAuth2SuccessHandler
 import com.alpha.kooing.config.jwt.JwtAuthenticationFilter
-import com.alpha.kooing.User.Role
+import com.alpha.kooing.user.Role
 import com.alpha.kooing.config.auth.CustomOauth2UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -13,7 +13,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig{
+class SecurityConfig(
+    val customOauth2UserService: CustomOauth2UserService,
+    val jwtAuthenticationFilter: JwtAuthenticationFilter,
+    val customOAuth2SuccessHandler: CustomOAuth2SuccessHandler
+){
     @Bean
     fun filterChain(http:HttpSecurity):SecurityFilterChain{
         http
@@ -21,18 +25,23 @@ class SecurityConfig{
             .headers { headersConfig -> headersConfig.frameOptions { frameOptionConf -> frameOptionConf.disable() } }
             // 인증이 필요한 url 설정
             .authorizeHttpRequests { conf ->
-                conf.requestMatchers("/api/v1/**").hasRole(Role.USER.name)
+                // 로그인 요청 url 승인
+                conf.requestMatchers("/oauth2/**").permitAll()
             }
             .logout { logoutConf->
                 logoutConf.logoutSuccessUrl("/")
             }
             .oauth2Login{oauth2LoginConf->
-                oauth2LoginConf.userInfoEndpoint { userInfoEndpointConf->
-                    userInfoEndpointConf.userService(CustomOauth2UserService())
+                oauth2LoginConf.authorizationEndpoint{ endpointConf->
+                    // 소셜 로그인 url => 클라이언트에서 여기에 요청을 보내면 됨
+                    endpointConf.baseUri("/oauth2/authorize")
                 }
-                oauth2LoginConf.successHandler(OAuth2LoginSuccessHandler())
+                oauth2LoginConf.userInfoEndpoint { userInfoEndpointConf->
+                    userInfoEndpointConf.userService(customOauth2UserService)
+                }
+                oauth2LoginConf.successHandler(customOAuth2SuccessHandler)
             }
-            .addFilterBefore(JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()
     }
 }
