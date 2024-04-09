@@ -4,24 +4,33 @@ import com.alpha.kooing.config.auth.CustomOAuth2SuccessHandler
 import com.alpha.kooing.config.jwt.JwtAuthenticationFilter
 import com.alpha.kooing.user.Role
 import com.alpha.kooing.config.auth.CustomOauth2UserService
+import org.apache.tomcat.util.file.ConfigurationSource
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.cors.CorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
     val customOauth2UserService: CustomOauth2UserService,
     val jwtAuthenticationFilter: JwtAuthenticationFilter,
-    val customOAuth2SuccessHandler: CustomOAuth2SuccessHandler
+    val customOAuth2SuccessHandler: CustomOAuth2SuccessHandler,
+    val securityCorsConfig: SecurityCorsConfig
 ){
     @Bean
     fun filterChain(http:HttpSecurity):SecurityFilterChain{
         http
+            .cors {conf -> conf.configurationSource(securityCorsConfig)}
             .csrf { conf->conf.disable() }
+            .formLogin{conf -> conf.disable()}
+            .rememberMe{conf -> conf.disable()}
+            .httpBasic { conf -> conf.disable() }
+            .sessionManagement{conf -> conf.sessionCreationPolicy(SessionCreationPolicy.STATELESS)}
             .headers { headersConfig -> headersConfig.frameOptions { frameOptionConf -> frameOptionConf.disable() } }
             // 인증이 필요한 url 설정
             .authorizeHttpRequests { conf ->
@@ -41,6 +50,7 @@ class SecurityConfig(
                 }
                 oauth2LoginConf.successHandler(customOAuth2SuccessHandler)
             }
+
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()
     }

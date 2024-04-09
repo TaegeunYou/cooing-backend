@@ -11,7 +11,8 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 class JwtAuthenticationFilter(
     val jwtTokenProvider: JwtTokenProvider
-):OncePerRequestFilter(){
+):OncePerRequestFilter()
+{
     private val authorizationHeader = "Authorization"
     private val bearerPrefix = "bearer "
     override fun doFilterInternal(
@@ -29,7 +30,8 @@ class JwtAuthenticationFilter(
 
     private fun getJwtToken(request: HttpServletRequest):String?{
         val bearerToken = request.getHeader(authorizationHeader)
-        if(bearerToken.startsWith(bearerPrefix) && StringUtils.hasText(bearerToken)){
+
+        if(bearerToken!=null && bearerToken.startsWith(bearerPrefix) && StringUtils.hasText(bearerToken)){
             return bearerToken.substring(7)
         }
         return null

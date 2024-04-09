@@ -1,5 +1,4 @@
 package com.alpha.kooing.config.jwt
-
 import com.alpha.kooing.user.Role
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
@@ -21,10 +20,7 @@ import javax.crypto.SecretKey
 // accessToken, refreshToken 생성 책임
 @Component
 @PropertySource("classpath:application.yml")
-class JwtTokenProvider{
-    @Value("\${spring.jwt.secretKey}")
-    private lateinit var secretKey: String
-
+class JwtTokenProvider(@Value("\${spring.jwt.secretKey}") private var secretKey: String) {
     private val authKey = "auth"
     private val accessTokenExpiration = 1000 * 60 * 60
     private val refreshTokenExpiration = 1000 * 60 * 60

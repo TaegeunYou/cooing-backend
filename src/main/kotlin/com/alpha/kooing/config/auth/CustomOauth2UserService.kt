@@ -23,6 +23,7 @@ class CustomOauth2UserService(
         val registrationId:String = userRequest.clientRegistration.registrationId
         val attributes:OAuthAttributes = OAuthAttributes.of(registrationId, oAuth2User.attributes)
         saveOrUpdate(attributes)
+        println(attributes.email)
         val authority =Collections.singleton(SimpleGrantedAuthority(Role.USER.name))
         return OAuth2CustomUser(attributes, authority)
     }
