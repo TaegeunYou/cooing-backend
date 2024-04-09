@@ -1,6 +1,7 @@
 package com.alpha.kooing.config.auth
 
 import com.alpha.kooing.config.jwt.JwtTokenProvider
+import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.dto.CustomOAuth2User
 import io.jsonwebtoken.io.IOException
 import jakarta.servlet.FilterChain
@@ -18,16 +19,19 @@ class CustomOAuth2SuccessHandler(
 ):SimpleUrlAuthenticationSuccessHandler(){
     private val jwtTokenExpiration = 60 * 60 * 60L
     @Throws(IOException::class, ServletException::class)
+    // filterchain 없는 놈으로 해야함. 아니면 successhandler로 안넘어감
     override fun onAuthenticationSuccess(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        chain: FilterChain,
         authentication: Authentication
     ) {
         val customOAuth2User = authentication.principal as CustomOAuth2User
         val email = customOAuth2User.email
         val authorities = authentication.authorities
-        val role = authorities.iterator().next().authority
+        var role = Role.USER.name
+        if(authorities.isNotEmpty()){
+            role = authorities.iterator().next().authority?:Role.USER.name
+        }
         val token = jwtTokenProvider.createJwt(email=email, role=role, expiration = jwtTokenExpiration)
         println("success")
         response.addCookie(createCookie("Authorization", token))

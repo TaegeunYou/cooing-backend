@@ -82,6 +82,7 @@ class SecurityConfig(
         http
             .authorizeHttpRequests { auth ->
                 auth
+                    //"/login/oauth2/code/*", "/oauth2/authorization/*"
                     .requestMatchers("/").permitAll()
                     .anyRequest().authenticated()
             }
