@@ -1,37 +1,54 @@
-package com.alpha.kooing.config.jwt
-
+import com.alpha.kooing.config.jwt.JwtTokenProvider
+import com.alpha.kooing.user.Role
+import com.alpha.kooing.user.dto.CustomOAuth2User
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
-import org.springframework.util.StringUtils
 import org.springframework.web.filter.OncePerRequestFilter
 
-@Component
 class JwtAuthenticationFilter(
     val jwtTokenProvider: JwtTokenProvider
-):OncePerRequestFilter(){
-    private val authorizationHeader = "Authorization"
-    private val bearerPrefix = "bearer "
+) : OncePerRequestFilter(){
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val authorization = getJwtToken(request)
-        if(authorization!=null && jwtTokenProvider.validateToken(authorization)){
-            val principal = jwtTokenProvider.getAuthentication(authorization)
-            SecurityContextHolder.getContext().authentication = principal
+        var authorization:String? = null
+        val requestUri = request.requestURI
+        println(requestUri)
+//        if(requestUri.matches(regex = Regex("""^/login(?:/.*)?$"""))){
+//            filterChain.doFilter(request, response)
+//            return
+//        }
+//        if(requestUri.matches(regex = Regex("""^/oauth2(?:/.*)?$"""))){
+//            filterChain.doFilter(request,response)
+//            return
+//        }
+        val cookies = request.cookies
+        for(cookie in cookies){
+            println("name : " + cookie.name)
+            println("value : " + cookie.value)
+            if(cookie.name.equals("Authentication")){
+                authorization = cookie.value
+            }
         }
-        filterChain.doFilter(request, response)
-    }
-
-    private fun getJwtToken(request: HttpServletRequest):String?{
-        val bearerToken = request.getHeader(authorizationHeader)
-        if(bearerToken.startsWith(bearerPrefix) && StringUtils.hasText(bearerToken)){
-            return bearerToken.substring(7)
+        if(authorization == null){
+            println("유효하지 않은 토큰")
+            filterChain.doFilter(request, response)
+            return
         }
-        return null
+        if(jwtTokenProvider.isExpired(authorization)){
+            println("만료된 토큰")
+            filterChain.doFilter(request, response)
+            return
+        }
+        val customOAuth2User = CustomOAuth2User(email = jwtTokenProvider.getJwtEmail(authorization), role = Role.valueOf(jwtTokenProvider.getJwtRole(authorization)), username = "")
+        val principal = UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.authorities)
+        SecurityContextHolder.getContext().authentication = principal
+        filterChain.doFilter(request,response)
     }
 }
