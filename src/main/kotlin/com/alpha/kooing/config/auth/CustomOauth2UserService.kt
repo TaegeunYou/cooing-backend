@@ -2,6 +2,7 @@ package com.alpha.kooing.config.auth
 
 import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.User
+import com.alpha.kooing.user.dto.CustomOAuth2User
 import com.alpha.kooing.user.repository.UserRepository
 import jakarta.transaction.Transactional
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -15,22 +16,18 @@ import java.util.Collections
 @Service
 class CustomOauth2UserService(
     val userRepository: UserRepository
-):OAuth2UserService<OAuth2UserRequest, OAuth2User>{
-    @Transactional
-    override fun loadUser(userRequest: OAuth2UserRequest): OAuth2User {
-        val service:OAuth2UserService<OAuth2UserRequest, OAuth2User> = DefaultOAuth2UserService()
-        val oAuth2User:OAuth2User = service.loadUser(userRequest)
-        val registrationId:String = userRequest.clientRegistration.registrationId
-        val attributes:OAuthAttributes = OAuthAttributes.of(registrationId, oAuth2User.attributes)
-        saveOrUpdate(attributes)
-        println(attributes.email)
-        val authority =Collections.singleton(SimpleGrantedAuthority(Role.USER.name))
-        return OAuth2CustomUser(attributes, authority)
-    }
-
-    fun saveOrUpdate(attributes: OAuthAttributes):User{
-        val user = userRepository.findByEmail(attributes.email)
-            .orElse(User(attributes.email))
-        return userRepository.save(user)
+):OAuth2UserService<OAuth2UserRequest, OAuth2User>, DefaultOAuth2UserService(){
+    override fun loadUser(userRequest: OAuth2UserRequest): OAuth2User?{
+        val oAuth2User:OAuth2User = super.loadUser(userRequest)
+        println(oAuth2User)
+        val registrationId = userRequest.clientRegistration.registrationId
+        val attributes = OAuthAttributes.of(registrationId, oAuth2User.attributes) ?: return null
+        // null이면 에러를 던지니까 널 체크가 의미가 없음 => 에러를 catch하거나 orElse 사용
+        val existUser = userRepository.findByEmail(attributes.email)
+            .orElse(User(email = attributes.email, username = attributes.name, role = Role.USER))
+        existUser.username = attributes.name
+        userRepository.save(existUser)
+        val customOAuth2User = CustomOAuth2User(role = Role.USER, email = attributes.email, username = attributes.name)
+        return customOAuth2User
     }
 }

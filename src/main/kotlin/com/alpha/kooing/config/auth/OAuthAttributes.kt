@@ -17,8 +17,12 @@ class OAuthAttributes(
             )
         }
 
-        fun of(registrationId: String, attributes: MutableMap<String, Any>):OAuthAttributes{
-            return ofGoogle(registrationId, attributes)
+        fun of(registrationId: String, attributes: MutableMap<String, Any>):OAuthAttributes?{
+            if(registrationId.equals("google")){
+                return ofGoogle(registrationId, attributes)
+            }else{
+                return null
+            }
         }
     }
 }
