@@ -20,19 +20,20 @@ class JwtAuthenticationFilter(
         var authorization:String? = null
         val requestUri = request.requestURI
         println(requestUri)
-//        if(requestUri.matches(regex = Regex("""^/login(?:/.*)?$"""))){
-//            filterChain.doFilter(request, response)
-//            return
-//        }
-//        if(requestUri.matches(regex = Regex("""^/oauth2(?:/.*)?$"""))){
-//            filterChain.doFilter(request,response)
-//            return
-//        }
+        if(requestUri.matches(regex = Regex("""^/login(?:/.*)?$"""))){
+            filterChain.doFilter(request, response)
+            return
+        }
+        if(requestUri.matches(regex = Regex("""^/oauth2(?:/.*)?$"""))){
+            filterChain.doFilter(request,response)
+            return
+        }
         val cookies = request.cookies
+        println(cookies)
         for(cookie in cookies){
             println("name : " + cookie.name)
             println("value : " + cookie.value)
-            if(cookie.name.equals("Authentication")){
+            if(cookie.name.equals("Authorization")){
                 authorization = cookie.value
             }
         }
