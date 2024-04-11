@@ -32,13 +32,12 @@ class SecurityConfig(
             .cors { conf -> conf.configurationSource(object : CorsConfigurationSource{
                 override fun getCorsConfiguration(request: HttpServletRequest): CorsConfiguration {
                     val config = CorsConfiguration()
-                    config.allowedHeaders = Collections.singletonList("*")
-                    config.allowedMethods = Collections.singletonList("*")
-                    config.allowedOrigins = Collections.singletonList("http://localhost:3000")
+                    config.addAllowedOrigin("http://localhost:3000")
+                    config.addAllowedMethod("*")
+                    config.addExposedHeader("*")
                     config.allowCredentials = true
-                    config.maxAge = 3600L
-                    config.exposedHeaders = Collections.singletonList("Set-Cookie")
-                    config.addExposedHeader("Authentication")
+                    config.addExposedHeader("Set-Cookie")
+                    config.addExposedHeader("Authorization")
                     return config
                 }
             })}

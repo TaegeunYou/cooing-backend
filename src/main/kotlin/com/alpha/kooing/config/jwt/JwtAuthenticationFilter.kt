@@ -29,10 +29,11 @@ class JwtAuthenticationFilter(
 //            return
 //        }
         val cookies = request.cookies
+        println(cookies)
         for(cookie in cookies){
             println("name : " + cookie.name)
             println("value : " + cookie.value)
-            if(cookie.name.equals("Authentication")){
+            if(cookie.name.equals("Authorization")){
                 authorization = cookie.value
             }
         }
@@ -49,6 +50,7 @@ class JwtAuthenticationFilter(
         val customOAuth2User = CustomOAuth2User(email = jwtTokenProvider.getJwtEmail(authorization), role = Role.valueOf(jwtTokenProvider.getJwtRole(authorization)), username = "")
         val principal = UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.authorities)
         SecurityContextHolder.getContext().authentication = principal
+        println("인증 완료 " + jwtTokenProvider.getJwtEmail(authorization))
         filterChain.doFilter(request,response)
     }
 }
