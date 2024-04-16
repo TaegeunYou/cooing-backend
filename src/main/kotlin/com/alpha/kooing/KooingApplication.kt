@@ -6,6 +6,9 @@ import org.springframework.boot.runApplication
 @SpringBootApplication
 class KooingApplication
 
+
+
+
 fun main(args: Array<String>) {
 	runApplication<KooingApplication>(*args)
 }
