@@ -34,7 +34,7 @@ class SecurityConfig(
                     val config = CorsConfiguration()
                     config.addAllowedOrigin("http://localhost:3000")
                     config.addAllowedMethod("*")
-                    config.addExposedHeader("*")
+                    config.addAllowedHeader("*")
                     config.allowCredentials = true
                     config.addExposedHeader("Set-Cookie")
                     config.addExposedHeader("Authorization")
