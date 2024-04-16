@@ -31,8 +31,8 @@ dependencies {
 	runtimeOnly ("io.jsonwebtoken:jjwt-impl:0.12.3")
 	runtimeOnly ("io.jsonwebtoken:jjwt-jackson:0.12.3")
 
-//	implementation("org.springframework.boot:spring-boot-starter-security")
-//	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 	// data jpa
 	runtimeOnly("com.mysql:mysql-connector-j")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
