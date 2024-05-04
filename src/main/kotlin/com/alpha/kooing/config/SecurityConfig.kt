@@ -60,10 +60,6 @@ class SecurityConfig(
         http
             .addFilterAfter(JwtAuthenticationFilter(jwtTokenProvider), OAuth2LoginAuthenticationFilter::class.java)
 
-        //JWTFilter 추가
-//        http
-//            .addFilterBefore(JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter::class.java)
-
         //oauth2
         http
             .oauth2Login { oauth2 ->
@@ -81,7 +77,9 @@ class SecurityConfig(
         http
             .authorizeHttpRequests { auth ->
                 auth
-                    //"/login/oauth2/code/*", "/oauth2/authorization/*"
+                    // 테스트 때문에 임시로 전체 허용 설정
+//                    .requestMatchers("/**").permitAll()
+                    // 아래부터 실제 경로별 권한 부여 로직
                     .requestMatchers("/").permitAll()
                     .anyRequest().authenticated()
             }

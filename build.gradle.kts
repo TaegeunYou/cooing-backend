@@ -30,7 +30,7 @@ dependencies {
 	implementation ("io.jsonwebtoken:jjwt-api:0.12.3")
 	runtimeOnly ("io.jsonwebtoken:jjwt-impl:0.12.3")
 	runtimeOnly ("io.jsonwebtoken:jjwt-jackson:0.12.3")
-
+	// oauth2 + spring security
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 	// data jpa
@@ -42,6 +42,14 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
+	// stomp
+	implementation("org.springframework.boot:spring-boot-starter-websocket")
+	implementation("org.webjars:webjars-locator-core")
+	implementation("org.webjars:sockjs-client:1.0.2")
+	implementation("org.webjars:stomp-websocket:2.3.3")
+	// spring-kafka
+	implementation("org.springframework.kafka:spring-kafka")
+	// test
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
