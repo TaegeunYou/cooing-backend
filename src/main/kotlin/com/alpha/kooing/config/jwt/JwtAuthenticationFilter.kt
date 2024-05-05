@@ -31,6 +31,7 @@ class JwtAuthenticationFilter(
         val cookies = request.cookies
         println(cookies)
         if(cookies == null){
+            SecurityContextHolder.getContext().authentication = null
             filterChain.doFilter(request, response)
             return
         }
@@ -42,11 +43,13 @@ class JwtAuthenticationFilter(
             }
         }
         if(authorization == null){
+            SecurityContextHolder.getContext().authentication = null
             println("유효하지 않은 토큰")
             filterChain.doFilter(request, response)
             return
         }
         if(jwtTokenProvider.isExpired(authorization)){
+            SecurityContextHolder.getContext().authentication = null
             println("만료된 토큰")
             filterChain.doFilter(request, response)
             return

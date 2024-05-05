@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache
 import org.springframework.stereotype.Component
 
 @Component
@@ -33,9 +34,19 @@ class CustomOAuth2SuccessHandler(
             role = authorities.iterator().next().authority?:Role.USER.name
         }
         val token = jwtTokenProvider.createJwt(email=email, role=role, expiration = jwtTokenExpiration)
-        println("success")
+        println("success" + getRedirectUri(request, response))
         response.addCookie(createCookie("Authorization", token))
         response.sendRedirect("http://localhost:3000/")
+    }
+
+    fun getRedirectUri(
+        request: HttpServletRequest,
+        response: HttpServletResponse
+    ):String?{
+        println("start")
+        val savedRequest = HttpSessionRequestCache().getRequest(request, response) ?: return " saved request null"
+        val redirectUri = savedRequest.getParameterValues("redirect_uri")?:return " redirect_url null"
+        return redirectUri[0]
     }
 
     fun createCookie(key:String, value:String):Cookie{
