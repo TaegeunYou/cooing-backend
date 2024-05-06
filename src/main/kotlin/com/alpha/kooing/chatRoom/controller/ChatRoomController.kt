@@ -20,7 +20,7 @@ class ChatRoomController(
         println(userIdList[0])
         var chatRoom = chatRoomService.findByUserList(userIdList)
         if(chatRoom == null) {
-            val newChatRoom = chatRoomService.createNewChatRoom(userIdList)
+            val newChatRoom = chatRoomService.getChatRoom(userIdList)
                 ?:return CommonResDto(HttpStatus.BAD_REQUEST, "BAD REQUEST", null)
             chatRoom = newChatRoom.toResponseDto()
         }
