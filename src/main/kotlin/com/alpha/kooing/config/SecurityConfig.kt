@@ -6,6 +6,7 @@ import com.alpha.kooing.config.auth.CustomOAuth2SuccessHandler
 import com.alpha.kooing.config.auth.CustomOauth2UserService
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -26,13 +27,16 @@ class SecurityConfig(
     val customOAuth2FailureHandler: CustomOAuth2FailureHandler,
     val jwtTokenProvider: JwtTokenProvider
 ){
+    @Value(value = "\${spring.cors.allowed-origin}")
+    lateinit var allowedOrigin:String
+
     @Bean
     fun filterChain(http:HttpSecurity):SecurityFilterChain{
         http
             .cors { conf -> conf.configurationSource(object : CorsConfigurationSource{
                 override fun getCorsConfiguration(request: HttpServletRequest): CorsConfiguration {
                     val config = CorsConfiguration()
-                    config.addAllowedOrigin("http://localhost:3000")
+                    config.addAllowedOrigin("allowedOrigin")
                     config.addAllowedMethod("*")
                     config.addAllowedHeader("*")
                     config.allowCredentials = true
@@ -78,7 +82,7 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     // 테스트 때문에 임시로 전체 허용 설정
-//                    .requestMatchers("/**").permitAll()
+                    .requestMatchers("/**").permitAll()
                     // 아래부터 실제 경로별 권한 부여 로직
                     .requestMatchers("/").permitAll()
                     .anyRequest().authenticated()

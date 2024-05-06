@@ -1,5 +1,6 @@
 package com.alpha.kooing.user
 
+import com.alpha.kooing.chatMatching.entity.ChatMatching
 import jakarta.persistence.*
 
 @Entity
@@ -12,6 +13,9 @@ class User(
 
     @Column(name = "role", nullable = false)
     val role: Role,
+
+    @OneToMany
+    var chatMatching: List<ChatMatching> = listOf(),
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
