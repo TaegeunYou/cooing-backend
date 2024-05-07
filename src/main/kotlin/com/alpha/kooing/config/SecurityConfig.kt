@@ -36,7 +36,7 @@ class SecurityConfig(
             .cors { conf -> conf.configurationSource(object : CorsConfigurationSource{
                 override fun getCorsConfiguration(request: HttpServletRequest): CorsConfiguration {
                     val config = CorsConfiguration()
-                    config.addAllowedOrigin("allowedOrigin")
+                    config.addAllowedOrigin(allowedOrigin)
                     config.addAllowedMethod("*")
                     config.addAllowedHeader("*")
                     config.allowCredentials = true

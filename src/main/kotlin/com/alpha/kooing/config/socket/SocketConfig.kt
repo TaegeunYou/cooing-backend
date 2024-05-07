@@ -1,5 +1,6 @@
 package com.alpha.kooing.config.socket
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.messaging.simp.config.ChannelRegistration
 import org.springframework.messaging.simp.config.MessageBrokerRegistry
@@ -12,10 +13,12 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 class SocketConfig(
     val clientInboundChannel: CustomClientInboundChannel
 ):WebSocketMessageBrokerConfigurer {
+    @Value(value = "\${spring.cors.allowed-origin}")
+    lateinit var allowedOrigin:String
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry
             .addEndpoint("/ws")
-            .setAllowedOrigins("localhost:3000")
+            .setAllowedOrigins(allowedOrigin)
             .withSockJS()
     }
 

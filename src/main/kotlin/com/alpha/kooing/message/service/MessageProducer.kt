@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class MessageProducer(
-    val kafkaTemplate: KafkaTemplate<String, Any>
+    val kafkaTemplate: KafkaTemplate<String, UserMessage>
 ){
     fun sendToUser(message:UserMessage){
         kafkaTemplate.send("chat", message)
