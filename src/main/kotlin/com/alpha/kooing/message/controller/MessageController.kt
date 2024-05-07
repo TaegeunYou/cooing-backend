@@ -13,7 +13,8 @@ class MessageController(
     val producer: MessageProducer
 ){
     @MessageMapping("/chat")
-    fun sendToUser(@Payload message: UserMessage, principal: Principal, accessor: SimpMessageHeaderAccessor){
+    fun sendToUser(@Payload message: UserMessage){
+        println("roomId : ${message.roomId}")
         producer.sendToUser(message)
     }
 }

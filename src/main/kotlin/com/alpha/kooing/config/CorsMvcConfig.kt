@@ -15,6 +15,7 @@ class CorsMvcConfig : WebMvcConfigurer {
             .exposedHeaders("Set-Cookie")
             .allowedOrigins(allowedOrigin)
             .allowCredentials(true)
+
         corsRegistry.addMapping("/ws/**")
             .allowedHeaders("*")
             .allowedMethods("*")

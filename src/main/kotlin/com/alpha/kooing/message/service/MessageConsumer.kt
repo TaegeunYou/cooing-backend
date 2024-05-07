@@ -13,6 +13,7 @@ class MessageConsumer(
     @KafkaListener(topics = ["chat"], groupId = "foo")
     fun consume(@Payload msg: UserMessage){
         println("consume ${msg.content}")
-        return template.convertAndSend("/queue/chat" + msg.roomId, msg)
+        val subscribePath = "/queue/chat/${msg.roomId}"
+        return template.convertAndSend(subscribePath, msg.content)
     }
 }

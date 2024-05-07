@@ -1,5 +1,6 @@
 package com.alpha.kooing.config.kafka
 
+import com.alpha.kooing.message.dto.UserMessage
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.springframework.beans.factory.annotation.Value
@@ -16,9 +17,9 @@ class KafkaConsumerConfig {
     lateinit var bootstrapServer: String
 
     @Bean
-    fun consumerFactory():ConsumerFactory<String, Any>{
+    fun consumerFactory():ConsumerFactory<String, UserMessage>{
         // 커스텀 jsonDeserializer 생성
-        val jsonDeserializer = JsonDeserializer<Any>()
+        val jsonDeserializer = JsonDeserializer(UserMessage::class.java)
         jsonDeserializer.setUseTypeMapperForKey(true)
         jsonDeserializer.setRemoveTypeHeaders(false)
         jsonDeserializer.addTrustedPackages("*")
@@ -29,8 +30,8 @@ class KafkaConsumerConfig {
     }
 
     @Bean
-    fun kafkaListenerContainerFactory():ConcurrentKafkaListenerContainerFactory<String, Any>{
-        val factory = ConcurrentKafkaListenerContainerFactory<String, Any>()
+    fun kafkaListenerContainerFactory():ConcurrentKafkaListenerContainerFactory<String, UserMessage>{
+        val factory = ConcurrentKafkaListenerContainerFactory<String, UserMessage>()
         factory.consumerFactory = consumerFactory()
         return factory
     }
