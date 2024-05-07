@@ -1,6 +1,6 @@
 package com.alpha.kooing.config.jwt
-import com.alpha.kooing.user.Role
 import io.jsonwebtoken.Jwts
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Component
@@ -38,6 +38,12 @@ class JwtTokenProvider(
             .expiration(Date(System.currentTimeMillis() + expiration))
             .signWith(secretKey)
             .compact()
+    }
+
+    fun resolveToken(request: HttpServletRequest): String {
+        return request.cookies.firstOrNull {
+            it.name == "Authorization"
+        }?.value ?: throw Exception("token 정보를 가져올 수 없습니다.")
     }
 
 
