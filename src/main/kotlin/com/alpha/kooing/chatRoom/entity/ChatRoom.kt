@@ -3,13 +3,7 @@ package com.alpha.kooing.chatRoom.entity
 import com.alpha.kooing.chatMatching.entity.ChatMatching
 import com.alpha.kooing.chatRoom.dto.ChatRoomResponseDto
 import com.alpha.kooing.util.BaseTimeEntity
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.EntityListeners
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.OneToMany
+import jakarta.persistence.*
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 
 @Entity
@@ -19,6 +13,7 @@ class ChatRoom(
     var unreadChat:Long,
 
     @OneToMany
+    @JoinColumn(name = "chat_room_id")
     var chatMatching: List<ChatMatching> = listOf(),
 
     @Id

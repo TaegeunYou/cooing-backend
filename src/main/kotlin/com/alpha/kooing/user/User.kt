@@ -15,6 +15,7 @@ class User(
     val role: Role,
 
     @OneToMany
+    @JoinColumn(name = "user_id")
     var chatMatching: List<ChatMatching> = listOf(),
 
     @Id
