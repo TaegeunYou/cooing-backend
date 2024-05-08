@@ -13,7 +13,7 @@ class InitData(
 ){
     @EventListener(ApplicationReadyEvent::class)
     fun initData(){
-        userRepository.save(User("kym8821","kym8821", Role.USER))
-        userRepository.save(User("louie9798","louie9798", Role.USER))
+//        userRepository.save(User("kym8821","kym8821", Role.USER))
+//        userRepository.save(User("louie9798","louie9798", Role.USER))
     }
 }
