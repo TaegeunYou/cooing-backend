@@ -14,7 +14,7 @@ class ChatRoom(
 
     @OneToMany
     @JoinColumn(name = "chat_room_id")
-    var chatMatching: List<ChatMatching> = listOf(),
+    var chatMatching: MutableList<ChatMatching> = mutableListOf(),
 
     @Id
     @Column(name = "id")
