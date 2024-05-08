@@ -10,17 +10,15 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/chat")
+@RequestMapping("/chatroom")
 class ChatRoomController(
     val chatRoomService: ChatRoomService
 ){
-    @GetMapping("/room")
-    fun createOrFindRoom(@RequestParam userIdList:List<String>):CommonResDto<*>{
-        println("catcha")
-        println(userIdList[0])
-        var chatRoom = chatRoomService.findByUserList(userIdList)
+    @GetMapping("")
+    fun createOrFindRoom(@RequestParam userId:List<String>):CommonResDto<*>{
+        var chatRoom = chatRoomService.findByUserList(userId)
         if(chatRoom == null) {
-            val newChatRoom = chatRoomService.getChatRoom(userIdList)
+            val newChatRoom = chatRoomService.getChatRoom(userId)
                 ?:return CommonResDto(HttpStatus.BAD_REQUEST, "BAD REQUEST", null)
             chatRoom = newChatRoom.toResponseDto()
         }

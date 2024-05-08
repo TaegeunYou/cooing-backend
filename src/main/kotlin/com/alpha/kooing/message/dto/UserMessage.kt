@@ -4,5 +4,6 @@ import java.io.Serializable
 
 class UserMessage(
     val roomId: Long,
-    val content: String
+    val senderId: Long,
+    val content: String,
 ):Serializable

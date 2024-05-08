@@ -1,6 +1,6 @@
 package com.alpha.kooing.user.repository
 
-import com.alpha.kooing.user.User
+import com.alpha.kooing.user.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.Optional
 

@@ -33,7 +33,7 @@ class ChatRoomService(
         userIdList.map {
             val user = userRepository.findById(it.toLong()).orElse(null) ?: return null
             val chatMatching = ChatMatching(user, savedChatRoom)
-            chatMatchingRepository.save(chatMatching)
+            savedChatRoom.chatMatching.add(chatMatchingRepository.save(chatMatching))
         }
         return savedChatRoom
     }

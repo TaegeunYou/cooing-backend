@@ -1,14 +1,14 @@
 package com.alpha.kooing.chatMatching.entity
 
 import com.alpha.kooing.chatRoom.entity.ChatRoom
-import com.alpha.kooing.user.User
+import com.alpha.kooing.user.entity.User
 import jakarta.persistence.*
 
 @Entity
 class ChatMatching(
     @ManyToOne
     @JoinColumn(name = "user_id")
-    val user:User,
+    val user: User,
 
     @ManyToOne
     @JoinColumn(name = "chat_room_id")

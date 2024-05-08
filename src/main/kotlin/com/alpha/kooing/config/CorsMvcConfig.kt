@@ -13,6 +13,8 @@ class CorsMvcConfig : WebMvcConfigurer {
     override fun addCorsMappings(corsRegistry: CorsRegistry) {
         corsRegistry.addMapping("/**")
             .exposedHeaders("Set-Cookie")
+            .allowedHeaders("*")
+            .allowedMethods("*")
             .allowedOrigins(allowedOrigin)
             .allowCredentials(true)
 

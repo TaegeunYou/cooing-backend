@@ -1,11 +1,7 @@
 package com.alpha.kooing.chatRoom.repository
 
-import com.alpha.kooing.chatRoom.entity.ChatRoom
-import com.alpha.kooing.user.User
 import jakarta.persistence.EntityManager
-import jakarta.persistence.EntityManagerFactory
 import jakarta.persistence.PersistenceContext
-import org.apache.kafka.common.protocol.types.Field.Str
 import org.springframework.stereotype.Repository
 
 @Repository
