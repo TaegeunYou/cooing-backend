@@ -1,8 +1,6 @@
 package com.alpha.kooing.user
 
-import com.alpha.kooing.board.entity.Board
-import com.alpha.kooing.board.entity.Comment
-import com.alpha.kooing.board.entity.Scrap
+import com.alpha.kooing.board.entity.*
 import jakarta.persistence.*
 
 @Entity
@@ -25,6 +23,12 @@ class User(
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     val scraps: MutableList<Scrap> = mutableListOf(),
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    val clubs: MutableList<Club> = mutableListOf(),
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    val studies: MutableList<Study> = mutableListOf(),
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

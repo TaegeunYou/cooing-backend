@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 class BoardController(
-    val boardService: BoardService,
-    val jwtTokenProvider: JwtTokenProvider
+    private val boardService: BoardService,
+    private val jwtTokenProvider: JwtTokenProvider
 ) {
 
     @GetMapping("/boards")

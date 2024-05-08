@@ -63,7 +63,7 @@ class BoardService(
                 board.createDatetime.toString(),
                 board.comments.size
             )
-        }
+        }.sortedByDescending { it.boardId }
     }
 
     @Transactional(readOnly = true)
