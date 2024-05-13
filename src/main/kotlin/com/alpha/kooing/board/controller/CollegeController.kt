@@ -20,6 +20,44 @@ class CollegeController(
     private val collegeService: CollegeService
 ) {
 
+    @GetMapping("/volunteers")
+    @Operation(summary = "봉사활동 목록 조회")
+    fun getVolunteers(
+        httpServletRequest: HttpServletRequest,
+        @RequestParam("query") query: String?,
+    ): ResponseEntity<ApiResponse<List<VolunteerSummary>>> {
+        val token = jwtTokenProvider.resolveToken(httpServletRequest)
+        return ResponseEntity.ok(
+            ApiResponse.success(
+                collegeService.getVolunteers(token, query)
+            )
+        )
+    }
+
+    @GetMapping("/volunteer/{volunteerId}")
+    @Operation(summary = "봉사활동 상세 조회")
+    fun getVolunteer(
+        httpServletRequest: HttpServletRequest,
+        @PathVariable("volunteerId") volunteerId: Long,
+    ): ResponseEntity<ApiResponse<VolunteerDetail>> {
+        return ResponseEntity.ok(
+            ApiResponse.success(
+                collegeService.getVolunteer(volunteerId)
+            )
+        )
+    }
+
+    @PostMapping("/volunteer")
+    @Operation(summary = "봉사활동 추가")
+    fun createVolunteer(
+        httpServletRequest: HttpServletRequest,
+        @RequestBody request: CreateVolunteerRequest
+    ): ResponseEntity<ApiResponse<Unit>> {
+        val token = jwtTokenProvider.resolveToken(httpServletRequest)
+        collegeService.createVolunteer(token, request)
+        return ResponseEntity.ok().build()
+    }
+
     @GetMapping("/clubs")
     @Operation(summary = "동아리 및 소모임 목록 조회")
     fun getClubs(

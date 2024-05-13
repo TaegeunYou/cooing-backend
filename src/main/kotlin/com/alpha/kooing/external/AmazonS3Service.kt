@@ -22,6 +22,7 @@ class AmazonS3Service(
     ): String {
         val key = "$category/${UUID.randomUUID().toString().substring(0..10)}.${uploadFile.originalFilename}"
         val objectMataData = ObjectMetadata()
+        objectMataData.contentType = uploadFile.contentType
         this.amazonS3.putObject(bucketName, key, uploadFile.inputStream, objectMataData)
         return amazonS3.getUrl(bucketName, key).toString()
     }
