@@ -43,7 +43,6 @@ class CustomOAuth2SuccessHandler(
         request: HttpServletRequest,
         response: HttpServletResponse
     ):String?{
-        println("start")
         val savedRequest = HttpSessionRequestCache().getRequest(request, response) ?: return " saved request null"
         val redirectUri = savedRequest.getParameterValues("redirect_uri")?:return " redirect_url null"
         return redirectUri[0]

@@ -26,6 +26,12 @@ class ChatRoomService(
     }
 
     @Transactional
+    fun findById(roomId:Long):ChatRoomResponseDto?{
+        val res = chatRoomRepository.findById(roomId).orElse(null) ?: return null
+        return res.toResponseDto()
+    }
+
+    @Transactional
     fun getChatRoom(userIdList: List<String>):ChatRoom?{
         val chatRoom = ChatRoom(0)
         val savedChatRoom = chatRoomRepository.save(chatRoom)
