@@ -11,6 +11,9 @@ class Chat(
     @Column(name = "content")
     var content:String,
 
+    @Column(name= "unread")
+    var unread:Int,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     var user: User,
@@ -24,6 +27,6 @@ class Chat(
     var id:Long? = null
 ):BaseTimeEntity(){
     fun toResponseDto():ChatResponseDto{
-        return ChatResponseDto(id, user.id, chatRoom.id, content)
+        return ChatResponseDto(id, unread, user.id, chatRoom.id, content)
     }
 }
