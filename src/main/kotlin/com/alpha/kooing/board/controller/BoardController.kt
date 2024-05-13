@@ -5,6 +5,7 @@ import com.alpha.kooing.board.enum.BoardType
 import com.alpha.kooing.board.service.BoardService
 import com.alpha.kooing.common.dto.ApiResponse
 import com.alpha.kooing.config.jwt.JwtTokenProvider
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -16,20 +17,22 @@ class BoardController(
 ) {
 
     @GetMapping("/boards")
+    @Operation(summary = "게시물 전체 조회", description = "자유게시판, 내가 쓴 글, 댓글 단 글, 스크랩한 글이나 검색어를 통해 조회합니다.")
     fun getBoards(
         httpServletRequest: HttpServletRequest,
-        @RequestParam("category") category: BoardType?,
+        @RequestParam("boardType") boardType: BoardType?,
         @RequestParam("query") query: String?,
     ): ResponseEntity<ApiResponse<List<BoardSummary>>> {
         val token = jwtTokenProvider.resolveToken(httpServletRequest)
         return ResponseEntity.ok(
             ApiResponse.success(
-                boardService.getBoards(token, category, query)
+                boardService.getBoards(token, boardType, query)
             )
         )
     }
 
     @GetMapping("/board/{boardId}")
+    @Operation(summary = "게시물 상세 조회")
     fun getBoardDetail(
         httpServletRequest: HttpServletRequest,
         @PathVariable("boardId") boardId: Long
@@ -43,6 +46,7 @@ class BoardController(
     }
 
     @PostMapping("/board")
+    @Operation(summary = "게시물 작성")
     fun createBoard(
         httpServletRequest: HttpServletRequest,
         @RequestBody request: CreateBoardRequest
@@ -53,6 +57,7 @@ class BoardController(
     }
 
     @PutMapping("/board/{boardId}")
+    @Operation(summary = "게시물 수정")
     fun updateBoard(
         httpServletRequest: HttpServletRequest,
         @PathVariable("boardId") boardId: Long,
@@ -64,6 +69,7 @@ class BoardController(
     }
 
     @DeleteMapping("/board/{boardId}")
+    @Operation(summary = "게시물 삭제")
     fun deleteBoard(
         httpServletRequest: HttpServletRequest,
         @PathVariable("boardId") boardId: Long
@@ -74,6 +80,7 @@ class BoardController(
     }
 
     @PostMapping("/board/{boardId}/comment")
+    @Operation(summary = "댓글 작성")
     fun createComment(
         httpServletRequest: HttpServletRequest,
         @PathVariable("boardId") boardId: Long,
@@ -85,6 +92,7 @@ class BoardController(
     }
 
     @PutMapping("/board/{boardId}/comment/{commentId}")
+    @Operation(summary = "댓글 수정")
     fun updateComment(
         httpServletRequest: HttpServletRequest,
         @PathVariable("boardId") boardId: Long,
@@ -97,6 +105,7 @@ class BoardController(
     }
 
     @DeleteMapping("/board/{boardId}/comment/{commentId}")
+    @Operation(summary = "댓글 삭제")
     fun deleteComment(
         httpServletRequest: HttpServletRequest,
         @PathVariable("boardId") boardId: Long,
@@ -108,6 +117,7 @@ class BoardController(
     }
 
     @PostMapping("/board/{boardId}/likes")
+    @Operation(summary = "게시물 좋아요")
     fun createLikes(
         httpServletRequest: HttpServletRequest,
         @PathVariable("boardId") boardId: Long
@@ -118,6 +128,7 @@ class BoardController(
     }
 
     @DeleteMapping("/board/{boardId}/likes")
+    @Operation(summary = "게시물 좋아요 취소")
     fun deleteLikes(
         httpServletRequest: HttpServletRequest,
         @PathVariable("boardId") boardId: Long
@@ -128,6 +139,7 @@ class BoardController(
     }
 
     @PostMapping("/board/{boardId}/scrap")
+    @Operation(summary = "게시물 스크랩")
     fun createScrap(
         httpServletRequest: HttpServletRequest,
         @PathVariable("boardId") boardId: Long
@@ -138,6 +150,7 @@ class BoardController(
     }
 
     @DeleteMapping("/board/{boardId}/scrap")
+    @Operation(summary = "게시물 스크랩 취소")
     fun deleteScrap(
         httpServletRequest: HttpServletRequest,
         @PathVariable("boardId") boardId: Long

@@ -24,11 +24,14 @@ class Board(
     @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
     val scraps: MutableList<Scrap> = mutableListOf(),
 
+    @Column(nullable = false)
     var title: String,
 
+    @Column(nullable = false)
     var content: String,
 
     @CreatedDate
+    @Column(nullable = false)
     val createDatetime: LocalDateTime
 ) {
     fun update(title: String, content: String) {

@@ -16,16 +16,22 @@ class Study(
     @JoinColumn(name = "user_id")
     val user: User,
 
+    @Column(nullable = false)
     val title: String,
 
+    @Column(nullable = false)
     val category: String,
 
+    @Column(nullable = false)
     val location: String,
 
+    @Column(nullable = false)
     val numberOfMembers: Int,
 
+    @Column(nullable = false)
     val content: String,
 
     @CreatedDate
+    @Column(nullable = false)
     val createDatetime: LocalDateTime
 )

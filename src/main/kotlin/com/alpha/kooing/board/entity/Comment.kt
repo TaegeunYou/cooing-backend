@@ -19,9 +19,11 @@ class Comment(
     @JoinColumn(name = "user_id")
     val user: User,
 
+    @Column(nullable = false)
     var content: String,
 
     @CreatedDate
+    @Column(nullable = false)
     val createDatetime: LocalDateTime
 ) {
     fun update(content: String) {

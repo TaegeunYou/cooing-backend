@@ -3,6 +3,7 @@ package com.alpha.kooing.config.auth
 import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.User
 import com.alpha.kooing.user.dto.CustomOAuth2User
+import com.alpha.kooing.user.enum.RoleType
 import com.alpha.kooing.user.repository.UserRepository
 import jakarta.transaction.Transactional
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -24,7 +25,7 @@ class CustomOauth2UserService(
         val attributes = OAuthAttributes.of(registrationId, oAuth2User.attributes) ?: return null
         // null이면 에러를 던지니까 널 체크가 의미가 없음 => 에러를 catch하거나 orElse 사용
         val existUser = userRepository.findByEmail(attributes.email)
-            .orElse(User(email = attributes.email, username = attributes.name, role = Role.USER))
+            .orElse(User(email = attributes.email, username = attributes.name, role = Role.USER, mutableListOf(), mutableListOf(), mutableListOf(), mutableListOf(), mutableListOf(), mutableListOf(), mutableListOf(), RoleType.헨젤, "", null, true))
         existUser.username = attributes.name
         userRepository.save(existUser)
         val customOAuth2User = CustomOAuth2User(role = Role.USER, email = attributes.email, username = attributes.name)

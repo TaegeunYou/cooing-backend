@@ -4,6 +4,7 @@ import com.alpha.kooing.board.dto.*
 import com.alpha.kooing.board.service.CollegeService
 import com.alpha.kooing.common.dto.ApiResponse
 import com.alpha.kooing.config.jwt.JwtTokenProvider
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,6 +21,7 @@ class CollegeController(
 ) {
 
     @GetMapping("/clubs")
+    @Operation(summary = "동아리 및 소모임 목록 조회")
     fun getClubs(
         httpServletRequest: HttpServletRequest,
         @RequestParam("query") query: String?,
@@ -33,6 +35,7 @@ class CollegeController(
     }
 
     @GetMapping("/club/{clubId}")
+    @Operation(summary = "동아리 및 소모임 상세 조회")
     fun getClub(
         httpServletRequest: HttpServletRequest,
         @PathVariable("clubId") clubId: Long,
@@ -45,6 +48,7 @@ class CollegeController(
     }
 
     @PostMapping("/club")
+    @Operation(summary = "동아리 및 소모임 추가")
     fun createClub(
         httpServletRequest: HttpServletRequest,
         @RequestBody request: CreateClubRequest
@@ -55,6 +59,7 @@ class CollegeController(
     }
 
     @GetMapping("/studies")
+    @Operation(summary = "스터디 목록 조회")
     fun getStudies(
         httpServletRequest: HttpServletRequest,
         @RequestParam("query") query: String?,
@@ -68,6 +73,7 @@ class CollegeController(
     }
 
     @GetMapping("/study/{studyId}")
+    @Operation(summary = "스터디 상세 조회")
     fun getStudy(
         httpServletRequest: HttpServletRequest,
         @PathVariable("studyId") studyId: Long,
@@ -80,6 +86,7 @@ class CollegeController(
     }
 
     @PostMapping("/study")
+    @Operation(summary = "스터디 추가")
     fun createStudy(
         httpServletRequest: HttpServletRequest,
         @RequestBody request: CreateStudyRequest
