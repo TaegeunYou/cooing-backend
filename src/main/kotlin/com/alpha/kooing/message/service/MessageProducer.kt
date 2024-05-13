@@ -1,10 +1,6 @@
 package com.alpha.kooing.message.service
 
-import com.alpha.kooing.chat.entity.Chat
-import com.alpha.kooing.chat.repository.ChatRepository
-import com.alpha.kooing.chatRoom.repository.ChatRoomRepository
 import com.alpha.kooing.message.dto.UserMessage
-import com.alpha.kooing.user.repository.UserRepository
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 
@@ -12,13 +8,14 @@ import org.springframework.stereotype.Service
 class MessageProducer(
     val kafkaTemplate: KafkaTemplate<String, UserMessage>,
 ){
-    fun sendToUser(message:UserMessage): UserMessage?{
-        val future = kafkaTemplate.send("chat", message)
+    // 여기서는 메세지 produce + 에러 체크까지만 책임이 있음
+    fun sendTemplate(topic:String, msg:UserMessage):Any?{
+        val future = kafkaTemplate.send(topic, msg)
         val ret = future.handle { _, error ->
             if(error != null){
                 null
             }else{
-                message
+                msg
             }
         }.get()
         return ret

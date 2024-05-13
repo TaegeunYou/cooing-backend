@@ -21,7 +21,12 @@ class KafkaTopicConfig {
     }
 
     @Bean
-    fun newTopic(): NewTopic {
+    fun chatTopic(): NewTopic {
         return TopicBuilder.name("chat").build()
+    }
+
+    @Bean
+    fun chattingTopic(): NewTopic {
+        return TopicBuilder.name("chatting").build()
     }
 }

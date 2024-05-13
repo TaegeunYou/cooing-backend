@@ -10,10 +10,16 @@ import org.springframework.stereotype.Service
 class MessageConsumer(
     val template: SimpMessagingTemplate
 ){
-    @KafkaListener(topics = ["chat"], groupId = "foo")
-    fun consume(@Payload msg: UserMessage){
+    @KafkaListener(topics = ["chatting"], groupId = "foo")
+    fun sendToUser(@Payload msg: UserMessage){
         println("consume ${msg.content}")
-        val subscribePath = "/queue/chat/${msg.roomId}"
+        val subscribePath = "/queue/chatting/${msg.roomId}"
+        return template.convertAndSend(subscribePath, msg)
+    }
+    @KafkaListener(topics = ["chat"], groupId = "foo")
+    fun handleUnread(@Payload msg:UserMessage){
+            println("handle unread : ${msg.content}")
+        val subscribePath = "/queue/chat/"
         return template.convertAndSend(subscribePath, msg.content)
     }
 }
