@@ -7,6 +7,6 @@ class UserDetail(
     val role: RoleType,
     val profileMessage: String,
     val profileImageUrl: String?,
-    val interestKeywordType: List<String>,
-    val concernKeywordType: List<String>,
+    val interestKeyword: List<String>,
+    val concernKeyword: List<String>,
 )

@@ -83,6 +83,8 @@ class SecurityConfig(
                 auth
                     //"/login/oauth2/code/*", "/oauth2/authorization/*"
                     .requestMatchers("/").permitAll()
+                    .requestMatchers("/v3/api-docs/**").permitAll()
+                    .requestMatchers("/swagger-ui/**").permitAll()
                     .anyRequest().authenticated()
             }
 
