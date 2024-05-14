@@ -29,32 +29,29 @@ class JwtAuthenticationFilter(
             return
         }
         val cookies = request.cookies
-        println(cookies)
         if(cookies == null){
             SecurityContextHolder.getContext().authentication = null
+            println("쿠키가 없습니다...")
             filterChain.doFilter(request, response)
             return
         }
         for(cookie in cookies){
-            println("name : " + cookie.name)
-            println("value : " + cookie.value)
             if(cookie.name.equals("Authorization")){
                 authorization = cookie.value
             }
         }
-        if(authorization == null){
+        if(authorization == null || jwtTokenProvider.isExpired(authorization)){
             SecurityContextHolder.getContext().authentication = null
             println("유효하지 않은 토큰")
             filterChain.doFilter(request, response)
             return
         }
-        if(jwtTokenProvider.isExpired(authorization)){
-            SecurityContextHolder.getContext().authentication = null
-            println("만료된 토큰")
-            filterChain.doFilter(request, response)
-            return
-        }
-        val customOAuth2User = CustomOAuth2User(email = jwtTokenProvider.getJwtEmail(authorization), role = Role.valueOf(jwtTokenProvider.getJwtRole(authorization)), username = "")
+        val customOAuth2User = CustomOAuth2User(
+            email = jwtTokenProvider.getJwtEmail(authorization),
+            role = Role.valueOf(jwtTokenProvider.getJwtRole(authorization)),
+            username = "",
+            id = jwtTokenProvider.getJwtUserId(authorization).toLong()
+        )
         val principal = UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.authorities)
         SecurityContextHolder.getContext().authentication = principal
         println("인증 완료 " + customOAuth2User.authorities)

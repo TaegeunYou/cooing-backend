@@ -1,5 +1,6 @@
 package com.alpha.kooing.message.service
 
+import com.alpha.kooing.message.dto.ChatMessage
 import com.alpha.kooing.message.dto.UserMessage
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.messaging.handler.annotation.Payload
@@ -17,9 +18,9 @@ class MessageConsumer(
         return template.convertAndSend(subscribePath, msg)
     }
     @KafkaListener(topics = ["chat"], groupId = "foo")
-    fun handleUnread(@Payload msg:UserMessage){
-            println("handle unread : ${msg.content}")
+    fun handleUnread(@Payload msg:ChatMessage){
+            println("handle unread : ${msg.id}")
         val subscribePath = "/queue/chat/"
-        return template.convertAndSend(subscribePath, msg.content)
+        return template.convertAndSend(subscribePath, msg)
     }
 }

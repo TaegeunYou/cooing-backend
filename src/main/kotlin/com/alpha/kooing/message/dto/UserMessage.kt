@@ -6,4 +6,5 @@ class UserMessage(
     var content:String,
     val senderId:Long,
     val roomId:Long?,
+    var chatId:Long?
 ):Serializable

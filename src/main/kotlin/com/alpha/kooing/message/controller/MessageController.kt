@@ -1,6 +1,7 @@
 package com.alpha.kooing.message.controller
 
 import com.alpha.kooing.chat.service.ChatService
+import com.alpha.kooing.message.dto.ChatMessage
 import com.alpha.kooing.message.dto.UserMessage
 import com.alpha.kooing.message.service.MessageProducer
 import org.springframework.messaging.handler.annotation.DestinationVariable
@@ -15,20 +16,21 @@ class MessageController(
 ){
     @MessageMapping("/chatting")
     fun sendToUser(@Payload message: UserMessage){
-        println("roomId : ${message.roomId}")
+        val chat = chatService.save(message)?:return
+        message.chatId = chat.id
         val res = producer.sendTemplate("chatting", message)
         if(res == null){
             println("produce error")
+            chatService.deleteById(chatId = chat.id)
         }else{
-            chatService.save(message)
+            println("produce success")
         }
     }
 
     @MessageMapping("/chat/{id}")
-    fun readChat(@DestinationVariable("id") id:String, @Payload message:UserMessage){
-        val chatId = id.toLong()
-        chatService.decreaseUnread(chatId = chatId, senderId = message.senderId)?:return
-        message.content = id
+    fun readChat(@DestinationVariable("id") id:String, @Payload message:ChatMessage){
+        val unread = chatService.decreaseUnread(chatId = message.id, senderId = message.senderId)?:return
+        message.unread = unread
         producer.sendTemplate("chat", message)
     }
 }

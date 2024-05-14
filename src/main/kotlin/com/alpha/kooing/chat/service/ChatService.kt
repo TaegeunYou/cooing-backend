@@ -41,4 +41,15 @@ class ChatService(
         }
         return chat.unread
     }
+
+    @Transactional
+    fun deleteById(chatId:Long?):Boolean{
+        if(chatId == null) return false
+        return try {
+            chatRepository.deleteById(chatId)
+            true
+        }catch (e:Exception){
+            false
+        }
+    }
 }

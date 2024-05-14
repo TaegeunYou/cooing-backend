@@ -6,16 +6,19 @@ import org.springframework.security.oauth2.core.user.OAuth2User
 import java.io.Serializable
 
 class CustomOAuth2User(
-    val role:Role,
+    var role:Role,
     var username:String,
-    val email:String
+    var email:String,
+    var id:Long?
 ):OAuth2User{
     override fun getName(): String {
         return username
     }
 
     override fun getAttributes(): MutableMap<String, Any> {
-        TODO("Not yet implemented")
+        val attributes = mutableMapOf<String, Any>()
+        attributes["email"] = email
+        return attributes
     }
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {

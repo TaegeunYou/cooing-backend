@@ -5,6 +5,7 @@ import com.alpha.kooing.config.auth.CustomOAuth2FailureHandler
 import com.alpha.kooing.config.auth.CustomOAuth2SuccessHandler
 import com.alpha.kooing.config.auth.CustomOauth2UserService
 import com.alpha.kooing.config.jwt.JwtTokenProvider
+import com.alpha.kooing.user.Role
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -85,8 +86,9 @@ class SecurityConfig(
                     .requestMatchers("/**").permitAll()
                     .requestMatchers("/ws/**").permitAll()
                     // 아래부터 실제 경로별 권한 부여 로직
-//                    .requestMatchers("/").permitAll()
-//                    .anyRequest().authenticated()
+                    .requestMatchers("/").permitAll()
+                    .requestMatchers("/signup").hasRole(Role.LIMITED.name)
+                    .anyRequest().authenticated()
             }
 
 

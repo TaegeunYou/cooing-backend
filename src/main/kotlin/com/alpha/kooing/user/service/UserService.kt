@@ -18,4 +18,15 @@ class UserService(
         }
         return result.map { it.toResponseDto() }
     }
+
+    @Transactional
+    fun save(user: User): UserResponseDto? {
+        try {
+            val result = userRepository.save(user)
+            return result.toResponseDto()
+        }catch (e: Exception){
+            println(e.message)
+            return null
+        }
+    }
 }

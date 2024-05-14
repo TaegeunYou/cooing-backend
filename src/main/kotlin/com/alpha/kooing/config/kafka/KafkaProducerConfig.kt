@@ -1,6 +1,5 @@
 package com.alpha.kooing.config.kafka
 
-import com.alpha.kooing.message.dto.UserMessage
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Value
@@ -17,14 +16,14 @@ class KafkaProducerConfig {
     lateinit var bootstrapServer: String
 
     @Bean
-    fun producerFactory():ProducerFactory<String, UserMessage>{
+    fun producerFactory():ProducerFactory<String, Any>{
         val config: HashMap<String, Any> = hashMapOf()
         config[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServer
         return DefaultKafkaProducerFactory(config, StringSerializer(), JsonSerializer())
     }
 
     @Bean
-    fun kafkaTemplate():KafkaTemplate<String, UserMessage>{
+    fun kafkaTemplate():KafkaTemplate<String, Any>{
         return KafkaTemplate(producerFactory())
     }
 }

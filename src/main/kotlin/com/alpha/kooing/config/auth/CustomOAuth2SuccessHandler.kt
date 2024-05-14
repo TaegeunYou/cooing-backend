@@ -1,8 +1,10 @@
 package com.alpha.kooing.config.auth
 
+import com.alpha.kooing.config.LoginUserManager
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.dto.CustomOAuth2User
+import com.alpha.kooing.user.entity.User
 import io.jsonwebtoken.io.IOException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
@@ -16,9 +18,10 @@ import org.springframework.stereotype.Component
 
 @Component
 class CustomOAuth2SuccessHandler(
-    val jwtTokenProvider: JwtTokenProvider
+    val jwtTokenProvider: JwtTokenProvider,
+    val userManager: LoginUserManager
 ):SimpleUrlAuthenticationSuccessHandler(){
-    private val jwtTokenExpiration = 60 * 60 * 60L
+    private val jwtTokenExpiration = 3600 * 60 * 60L
     @Throws(IOException::class, ServletException::class)
     // filterchain 없는 놈으로 해야함. 아니면 successhandler로 안넘어감
     override fun onAuthenticationSuccess(
@@ -26,26 +29,16 @@ class CustomOAuth2SuccessHandler(
         response: HttpServletResponse,
         authentication: Authentication
     ) {
-        val customOAuth2User = authentication.principal as CustomOAuth2User
-        val email = customOAuth2User.email
-        val authorities = authentication.authorities
-        var role = Role.USER.name
-        if(authorities.isNotEmpty()){
-            role = authorities.iterator().next().authority?:Role.USER.name
+        val user = authentication.principal as CustomOAuth2User
+        val email = user.email
+        val userId = user.id
+        val role = user.role.name
+        if(role == Role.USER.name){
+            userManager.loginUser(userId, user)
         }
-        val token = jwtTokenProvider.createJwt(email=email, role=role, expiration = jwtTokenExpiration)
-        println("success" + getRedirectUri(request, response))
+        val token = jwtTokenProvider.createJwt(email=email, role=role, id = userId, expiration = jwtTokenExpiration)
         response.addCookie(createCookie("Authorization", token))
         response.sendRedirect("http://localhost:3000/")
-    }
-
-    fun getRedirectUri(
-        request: HttpServletRequest,
-        response: HttpServletResponse
-    ):String?{
-        val savedRequest = HttpSessionRequestCache().getRequest(request, response) ?: return " saved request null"
-        val redirectUri = savedRequest.getParameterValues("redirect_uri")?:return " redirect_url null"
-        return redirectUri[0]
     }
 
     fun createCookie(key:String, value:String):Cookie{

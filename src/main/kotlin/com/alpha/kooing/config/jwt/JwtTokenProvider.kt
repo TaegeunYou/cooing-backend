@@ -1,5 +1,6 @@
 package com.alpha.kooing.config.jwt
 import com.alpha.kooing.user.Role
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.PropertySource
@@ -27,13 +28,22 @@ class JwtTokenProvider(
     fun getJwtRole(token: String):String{
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).payload["role"].toString()
     }
-    fun isExpired(token: String):Boolean{
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).payload.expiration.before(Date(System.currentTimeMillis()))
+    fun getJwtUserId(token: String):String{
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).payload["id"].toString()
     }
-    fun createJwt(email:String, role:String, expiration:Long): String {
+    fun isExpired(token: String):Boolean{
+        return try {
+            Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).payload.expiration.before(Date(System.currentTimeMillis()))
+            false
+        }catch (e:ExpiredJwtException){
+            true
+        }
+    }
+    fun createJwt(id:Long?, email:String, role:String, expiration:Long): String {
         return Jwts.builder()
             .claim("email", email)
             .claim("role", role)
+            .claim("id", id.toString())
             .issuedAt(Date(System.currentTimeMillis()))
             .expiration(Date(System.currentTimeMillis() + expiration))
             .signWith(secretKey)
