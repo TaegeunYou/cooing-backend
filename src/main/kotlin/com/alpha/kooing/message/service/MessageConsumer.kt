@@ -19,7 +19,6 @@ class MessageConsumer(
     }
     @KafkaListener(topics = ["chat"], groupId = "foo")
     fun handleUnread(@Payload msg:ChatMessage){
-            println("handle unread : ${msg.id}")
         val subscribePath = "/queue/chat/"
         return template.convertAndSend(subscribePath, msg)
     }

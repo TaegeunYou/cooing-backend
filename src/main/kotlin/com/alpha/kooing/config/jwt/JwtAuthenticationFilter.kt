@@ -46,6 +46,7 @@ class JwtAuthenticationFilter(
             filterChain.doFilter(request, response)
             return
         }
+        println("user role : ${Role.valueOf(jwtTokenProvider.getJwtRole(authorization))}")
         val customOAuth2User = CustomOAuth2User(
             email = jwtTokenProvider.getJwtEmail(authorization),
             role = Role.valueOf(jwtTokenProvider.getJwtRole(authorization)),

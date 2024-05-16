@@ -34,7 +34,6 @@ class JwtTokenProvider(
     fun isExpired(token: String):Boolean{
         return try {
             Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).payload.expiration.before(Date(System.currentTimeMillis()))
-            false
         }catch (e:ExpiredJwtException){
             true
         }

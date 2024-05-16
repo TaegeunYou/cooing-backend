@@ -27,8 +27,8 @@ class HelloController(
 
     @GetMapping("/loginuser")
     @ResponseBody
-    fun getLoginUser():MutableList<*>{
-        val userList = userManager.getLoginUserAll()
+    fun getLoginUser():List<*>{
+        val userList = userManager.getLoginUserList()
         if(userList!=null){
             return userList
         }else{

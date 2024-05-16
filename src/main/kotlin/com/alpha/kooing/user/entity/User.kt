@@ -25,6 +25,16 @@ class User(
     val id:Long? = null
 ){
     fun toResponseDto():UserResponseDto{
-        return UserResponseDto(this.id, this.email,this.username,this.role)
+        return UserResponseDto(
+            id=this.id,
+            email = this.email,
+            username = this.username,
+            role = this.role
+        )
     }
+
+    override fun toString(): String {
+        return "User(email='$email', username='$username', role=$role)"
+    }
+
 }

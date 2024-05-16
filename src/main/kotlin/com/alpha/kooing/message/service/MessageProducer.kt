@@ -15,7 +15,6 @@ class MessageProducer(
             .setHeader(KafkaHeaders.TOPIC, topic)
             .setHeader("__TypeId__", msg!!::class.java.name)
             .build()
-        println("msg type : ${msg!!::class.java.name}")
         val future = kafkaTemplate.send(message)
         val ret = future.handle { _, error ->
             if(error != null){

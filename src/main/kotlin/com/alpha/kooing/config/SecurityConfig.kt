@@ -83,11 +83,12 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     // 테스트 때문에 임시로 전체 허용 설정
+                    .requestMatchers("/signup").hasAuthority(Role.LIMITED.name)
                     .requestMatchers("/**").permitAll()
                     .requestMatchers("/ws/**").permitAll()
                     // 아래부터 실제 경로별 권한 부여 로직
-                    .requestMatchers("/").permitAll()
-                    .requestMatchers("/signup").hasRole(Role.LIMITED.name)
+//                    .requestMatchers("/").permitAll()
+//                    .requestMatchers("/signup").hasAuthority(Role.LIMITED.name)
                     .anyRequest().authenticated()
             }
 
