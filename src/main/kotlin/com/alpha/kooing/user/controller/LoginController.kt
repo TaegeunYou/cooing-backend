@@ -3,21 +3,18 @@ package com.alpha.kooing.user.controller
 import com.alpha.kooing.config.LoginUserManager
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.user.Role
+import com.alpha.kooing.user.User
 import com.alpha.kooing.user.dto.CustomOAuth2User
-import com.alpha.kooing.user.dto.UserResponseDto
-import com.alpha.kooing.user.entity.User
+import com.alpha.kooing.user.enum.RoleType
 import com.alpha.kooing.user.service.UserService
 import com.alpha.kooing.util.CommonResDto
 import jakarta.servlet.http.Cookie
-import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
-import java.security.Principal
 
 @RestController
 class LoginController(
@@ -33,11 +30,17 @@ class LoginController(
             ?:return CommonResDto(HttpStatus.BAD_REQUEST, "authentication not exists", null)
         val oauthUser = auth.principal as CustomOAuth2User
         println(oauthUser.email)
-        val user = userService.save(User(
-            email = oauthUser.email,
-            username = oauthUser.username,
-            role = Role.USER,
-        ))?:return CommonResDto(HttpStatus.BAD_REQUEST, "BAD REQUEST", null)
+        val user = userService.save(
+            User(
+                email = oauthUser.email,
+                username = oauthUser.username,
+                role = Role.USER,
+                isMatchingActive = false,
+                profileImageUrl = "",
+                profileMessage = "",
+                roleType = RoleType.그레텔
+            )
+        )?:return CommonResDto(HttpStatus.BAD_REQUEST, "BAD REQUEST", null)
         val newToken = jwtTokenProvider.createJwt(
             id = user.id,
             email = user.email,

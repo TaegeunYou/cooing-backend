@@ -1,7 +1,7 @@
 package com.alpha.kooing.chatMatching.entity
 
 import com.alpha.kooing.chatRoom.entity.ChatRoom
-import com.alpha.kooing.user.entity.User
+import com.alpha.kooing.user.User
 import jakarta.persistence.*
 
 @Entity

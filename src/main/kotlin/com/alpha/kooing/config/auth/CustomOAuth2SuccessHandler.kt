@@ -4,16 +4,13 @@ import com.alpha.kooing.config.LoginUserManager
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.dto.CustomOAuth2User
-import com.alpha.kooing.user.entity.User
 import io.jsonwebtoken.io.IOException
-import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache
 import org.springframework.stereotype.Component
 
 @Component

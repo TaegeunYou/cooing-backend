@@ -2,7 +2,7 @@ package com.alpha.kooing.chat.entity
 
 import com.alpha.kooing.chat.dto.ChatResponseDto
 import com.alpha.kooing.chatRoom.entity.ChatRoom
-import com.alpha.kooing.user.entity.User
+import com.alpha.kooing.user.User
 import com.alpha.kooing.util.BaseTimeEntity
 import jakarta.persistence.*
 

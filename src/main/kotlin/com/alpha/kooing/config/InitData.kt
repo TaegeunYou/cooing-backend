@@ -7,7 +7,8 @@ import com.alpha.kooing.chatMatching.repository.ChatMatchingRepository
 import com.alpha.kooing.chatRoom.entity.ChatRoom
 import com.alpha.kooing.chatRoom.repository.ChatRoomRepository
 import com.alpha.kooing.user.Role
-import com.alpha.kooing.user.entity.User
+import com.alpha.kooing.user.User
+import com.alpha.kooing.user.enum.RoleType
 import com.alpha.kooing.user.repository.UserRepository
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Configuration
@@ -34,10 +35,23 @@ class InitData(
 
     fun createUser():MutableList<User>{
         val res:MutableList<User> = mutableListOf()
-        res.add(userRepository.save(User("kym8821","kym8821", Role.USER)))
-        res.add(userRepository.save(User("louie9798","louie9798", Role.USER)))
-        res.add(userRepository.save(User("postman","postman", Role.USER)))
+        res.add(userRepository.save(getUser("kym8821", "kym8821", Role.USER)))
+        res.add(userRepository.save(getUser("louie9798", "louie9798", Role.USER)))
+        res.add(userRepository.save(getUser("postman","postman", Role.USER)))
         return res
+    }
+
+    fun getUser(name:String, email:String, role:Role):User{
+        val user = User(
+            email=email,
+            username = name,
+            role = role,
+            isMatchingActive = false,
+            profileMessage = "",
+            profileImageUrl = "",
+            roleType = RoleType.그레텔
+        )
+        return user
     }
 
     fun createChatRoom(user:User):ChatRoom{
