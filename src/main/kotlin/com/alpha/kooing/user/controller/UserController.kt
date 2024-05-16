@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/user")
 class UserController(
     val userService: UserService
 ){
