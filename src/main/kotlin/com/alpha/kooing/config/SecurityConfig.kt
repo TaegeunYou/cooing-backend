@@ -65,6 +65,10 @@ class SecurityConfig(
         http
             .addFilterAfter(JwtAuthenticationFilter(jwtTokenProvider), OAuth2LoginAuthenticationFilter::class.java)
 
+        //JWTFilter 추가
+//        http
+//            .addFilterBefore(JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter::class.java)
+
         //oauth2
         http
             .oauth2Login { oauth2 ->
@@ -82,12 +86,13 @@ class SecurityConfig(
         http
             .authorizeHttpRequests { auth ->
                 auth
-                    // 테스트 때문에 임시로 전체 허용 설정
-                    .requestMatchers("/**").permitAll()
-                    .requestMatchers("/ws/**").permitAll()
-                    // 아래부터 실제 경로별 권한 부여 로직
+                    //"/login/oauth2/code/*", "/oauth2/authorization/*"
                     .requestMatchers("/").permitAll()
-                    .requestMatchers("/signup").hasRole(Role.LIMITED.name)
+                    .requestMatchers("/v3/api-docs/**").permitAll()
+                    .requestMatchers("/swagger-ui/**").permitAll()
+                    // 로그인, 웹소켓 권한
+                    .requestMatchers("/signup").hasAuthority(Role.LIMITED.name)
+                    .requestMatchers("/ws/**").hasAuthority(Role.USER.name)
                     .anyRequest().authenticated()
             }
 
