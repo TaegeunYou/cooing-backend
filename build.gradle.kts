@@ -47,6 +47,12 @@ dependencies {
 	//s3
 	implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
 
+	implementation("org.json:json:20210307")
+	implementation("commons-io:commons-io:2.9.0")
+
+	//crawling
+	implementation("org.jsoup:jsoup:1.17.2")
+
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
