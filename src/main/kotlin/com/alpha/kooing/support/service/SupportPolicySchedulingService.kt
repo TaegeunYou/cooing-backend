@@ -1,7 +1,6 @@
 package com.alpha.kooing.support.service
 
 import com.alpha.kooing.support.dto.SupportPolicyDto
-import com.alpha.kooing.support.entity.SupportPolicy
 import com.alpha.kooing.support.enum.SupportPolicyLocationType
 import com.alpha.kooing.support.enum.SupportPolicyPeriodType
 import com.alpha.kooing.support.enum.SupportPolicyType
@@ -34,10 +33,8 @@ class SupportPolicySchedulingService(
      * 온통 청년 사이트에서 오픈 api로 제공해주는 지원 정책을 가져와서 DB에 저장
      */
     @Transactional
-    fun getSupportPolicy() {
-        val supportPolicies = this.getAllSupportPolicyByExternal().map {
-            SupportPolicy(it)
-        }
+    fun updateSupportPolicy() {
+        val supportPolicies = this.getAllSupportPolicyByExternal()
         if (supportPolicies.isNotEmpty()) {
             //모두 삭제하고 모두 다시 추가하는 방식
             supportPolicyRepository.deleteAllInBatch()
@@ -90,7 +87,7 @@ class SupportPolicySchedulingService(
         return mapper.readValue(XML.toJSONObject(xml).toString(), clazz)
     }
 
-    private fun bulkInsertSupportPolicy(supportPolicyList: List<SupportPolicy>) {
+    private fun bulkInsertSupportPolicy(supportPolicyList: List<SupportPolicyDto.YouthPolicyList.YouthPolicy>) {
         val sql = ("INSERT INTO "
                 + "SUPPORT_POLICY "
                 + "(POLY_BIZ_SJNM, POLY_ITCN_CN, POLY_RLM_CD, SPOR_CN, RQUT_PRD_CN, BIZ_PRD_CN, SPOR_SCVL, PRD_RPTT_SECD, "
@@ -101,7 +98,7 @@ class SupportPolicySchedulingService(
         jdbcTemplate.batchUpdate(sql, object : BatchPreparedStatementSetter {
             @Throws(SQLException::class)
             override fun setValues(ps: PreparedStatement, i: Int) {
-                val supportPolicy: SupportPolicy = supportPolicyList[i]
+                val supportPolicy = supportPolicyList[i]
                 ps.setString(1, supportPolicy.polyBizSjnm.noContentIsNull())
                 ps.setString(2, supportPolicy.polyItcnCn.noContentIsNull())
                 ps.setString(3, supportPolicy.polyRlmCd.noContentIsNull().policyCodeToName())

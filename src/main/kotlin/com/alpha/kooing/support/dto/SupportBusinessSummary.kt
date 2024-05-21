@@ -1,4 +1,7 @@
 package com.alpha.kooing.support.dto
 
-class SupportBusinessSummary {
-}
+class SupportBusinessSummary(
+    val id: Long,
+    val title: String,
+    val category: String?,
+)
