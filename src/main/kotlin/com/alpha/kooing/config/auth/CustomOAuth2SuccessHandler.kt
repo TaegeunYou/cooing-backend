@@ -30,10 +30,12 @@ class CustomOAuth2SuccessHandler(
         val email = user.email
         val userId = user.id
         val role = user.role.name
-        val token = jwtTokenProvider.createJwt(email=email, role=role, id = userId, expiration = jwtTokenExpiration)
+        val username = user.username
+        val token = jwtTokenProvider.createJwt(email=email, role=role, id = userId, username=username, expiration = jwtTokenExpiration)
         if(role == Role.USER.name){
             userManager.loginUser(userId, token)
         }
+        response.setHeader("Authorization", token)
         response.addCookie(createCookie("Authorization", token))
         response.sendRedirect("http://localhost:3000/")
     }

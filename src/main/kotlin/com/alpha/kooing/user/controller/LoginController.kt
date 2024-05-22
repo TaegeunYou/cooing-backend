@@ -8,7 +8,9 @@ import com.alpha.kooing.user.dto.CustomOAuth2User
 import com.alpha.kooing.user.enum.RoleType
 import com.alpha.kooing.user.service.UserService
 import com.alpha.kooing.util.CommonResDto
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.Cookie
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.SecurityContextHolder
@@ -25,31 +27,35 @@ class LoginController(
     val expiration:Long = 3600 * 60 * 60L
 
     @PostMapping("/signup")
-    fun signup(response: HttpServletResponse) : CommonResDto<*>{
-        val auth = SecurityContextHolder.getContext().authentication
-            ?:return CommonResDto(HttpStatus.BAD_REQUEST, "authentication not exists", null)
-        val oauthUser = auth.principal as CustomOAuth2User
-        println(oauthUser.email)
-        val user = userService.save(
-            User(
-                email = oauthUser.email,
-                username = oauthUser.username,
-                role = Role.USER,
-                isMatchingActive = false,
-                profileImageUrl = "",
-                profileMessage = "",
-                roleType = RoleType.그레텔
+    fun signup(request: HttpServletRequest, response: HttpServletResponse) : CommonResDto<*>{
+        try {
+            val token = jwtTokenProvider.resolveToken(request)
+            if(jwtTokenProvider.getJwtRole(token)!=Role.LIMITED.name) throw Exception()
+            println(jwtTokenProvider.getJwtUsername(token))
+            val user = userService.save(
+                User(
+                    email = jwtTokenProvider.getJwtEmail(token),
+                    username = jwtTokenProvider.getJwtUsername(token),
+                    role = Role.USER,
+                    isMatchingActive = false,
+                    profileImageUrl = "",
+                    profileMessage = "",
+                    roleType = RoleType.그레텔
+                )
+            )?:return CommonResDto(HttpStatus.BAD_REQUEST, "BAD REQUEST", null)
+            val newToken = jwtTokenProvider.createJwt(
+                id = user.id,
+                email = user.email,
+                username = user.username,
+                role = Role.USER.name,
+                expiration = expiration
             )
-        )?:return CommonResDto(HttpStatus.BAD_REQUEST, "BAD REQUEST", null)
-        val newToken = jwtTokenProvider.createJwt(
-            id = user.id,
-            email = user.email,
-            role = Role.USER.name,
-            expiration = expiration
-        )
-        userManager.loginUser(user.id, newToken)
-        response.addCookie(Cookie("Authorization", newToken))
-        return CommonResDto(HttpStatus.OK, "OK", user)
+            userManager.loginUser(user.id, newToken)
+            response.addCookie(Cookie("Authorization", newToken))
+            return CommonResDto(HttpStatus.OK, "OK", user)
+        }catch (e:Exception){
+            return CommonResDto(HttpStatus.BAD_REQUEST, "token not valid", null)
+        }
     }
 
     @GetMapping("/signout")
@@ -60,6 +66,17 @@ class LoginController(
             return CommonResDto(HttpStatus.OK, "Logout Success", null)
         }catch (e:Exception){
             return CommonResDto(HttpStatus.BAD_REQUEST, "bad request", null)
+        }
+    }
+
+    @GetMapping("/login-info")
+    @Operation(summary="현재 사용자 로그인 여부 조회")
+    fun getLoginInfo(servletRequest: HttpServletRequest, response: HttpServletResponse): CommonResDto<*>{
+        try {
+            val token = jwtTokenProvider.resolveToken(servletRequest)
+            return CommonResDto(HttpStatus.OK, "", jwtTokenProvider.getJwtRole(token))
+        }catch (e:Exception){
+            return CommonResDto(HttpStatus.OK, "", Role.GUEST.name)
         }
     }
 }

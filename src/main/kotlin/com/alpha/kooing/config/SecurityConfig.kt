@@ -1,6 +1,6 @@
 package com.alpha.kooing.config
 
-import JwtAuthenticationFilter
+import com.alpha.kooing.config.jwt.JwtAuthenticationFilter
 import com.alpha.kooing.config.auth.CustomOAuth2FailureHandler
 import com.alpha.kooing.config.auth.CustomOAuth2SuccessHandler
 import com.alpha.kooing.config.auth.CustomOauth2UserService
@@ -15,10 +15,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
-import java.util.*
 
 @Configuration
 @EnableWebSecurity
@@ -67,7 +65,7 @@ class SecurityConfig(
 
         //JWTFilter 추가
 //        http
-//            .addFilterBefore(JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter::class.java)
+//            .addFilterBefore(com.alpha.kooing.config.jwt.JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter::class.java)
 
         //oauth2
         http
@@ -87,7 +85,9 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     //"/login/oauth2/code/*", "/oauth2/authorization/*"
+                    .requestMatchers("/**").permitAll()
                     .requestMatchers("/").permitAll()
+                    .requestMatchers("/login-info").permitAll()
                     .requestMatchers("/v3/api-docs/**").permitAll()
                     .requestMatchers("/swagger-ui/**").permitAll()
                     // 로그인, 웹소켓 권한

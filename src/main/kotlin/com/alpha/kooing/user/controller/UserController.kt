@@ -26,10 +26,6 @@ class UserController(
     private val jwtTokenProvider: JwtTokenProvider,
     private val userService: UserService,
 ){
-    @GetMapping("/user/google/login")
-    fun googleLogin() {
-        val restTemplate = RestTemplate()
-    }
     @GetMapping("/users")
     fun findAllUsers() : CommonResDto<*>{
         val result = userService.findAll() ?: return CommonResDto(HttpStatus.BAD_REQUEST, "Bad Request", null)

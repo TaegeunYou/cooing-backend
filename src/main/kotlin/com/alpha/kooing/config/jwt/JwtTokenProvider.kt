@@ -32,14 +32,18 @@ class JwtTokenProvider(
     fun getJwtUserId(token: String):String{
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).payload["id"].toString()
     }
+    fun getJwtUsername(token: String):String{
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).payload["username"].toString()
+    }
     fun isExpired(token: String):Boolean{
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).payload.expiration.before(Date(System.currentTimeMillis()))
     }
-    fun createJwt(id:Long?, email:String, role:String, expiration:Long): String {
+    fun createJwt(id:Long?, email:String, role:String, username:String, expiration:Long): String {
         return Jwts.builder()
             .claim("email", email)
             .claim("role", role)
             .claim("id", id.toString())
+            .claim("username", username)
             .issuedAt(Date(System.currentTimeMillis()))
             .expiration(Date(System.currentTimeMillis() + expiration))
             .signWith(secretKey)
@@ -52,5 +56,7 @@ class JwtTokenProvider(
         }?.value ?: throw Exception("token 정보를 가져올 수 없습니다.")
     }
 
-
+    fun resolveTokenHeader(request: HttpServletRequest): String? {
+        return request.getHeader("Authorization")?: return null
+    }
 }

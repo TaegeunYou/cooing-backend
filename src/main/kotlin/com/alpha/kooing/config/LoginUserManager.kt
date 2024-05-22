@@ -45,7 +45,7 @@ class LoginUserManager(
                 println(token)
                 val userDto = UserResponseDto(
                     id = user.key,
-                    username = "",
+                    username = jwtTokenProvider.getJwtUsername(token),
                     email = jwtTokenProvider.getJwtEmail(token),
                     role = Role.valueOf(jwtTokenProvider.getJwtRole(token))
                 )
