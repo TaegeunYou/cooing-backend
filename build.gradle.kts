@@ -15,6 +15,7 @@ java {
 	sourceCompatibility = JavaVersion.VERSION_17
 }
 
+
 configurations {
 	compileOnly {
 		extendsFrom(configurations.annotationProcessor.get())
@@ -43,7 +44,6 @@ dependencies {
 
 	//swagger
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
-
 	//s3
 	implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
 
