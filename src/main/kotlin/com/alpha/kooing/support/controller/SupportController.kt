@@ -10,6 +10,7 @@ import com.alpha.kooing.support.enum.SupportPolicyLocationType
 import com.alpha.kooing.support.service.SupportBusinessSchedulingService
 import com.alpha.kooing.support.service.SupportPolicySchedulingService
 import com.alpha.kooing.support.service.SupportService
+import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -25,6 +26,7 @@ class SupportController(
 ) {
 
     @GetMapping("/support/policy")
+    @Operation(summary = "지원 정책 목록 조회")
     fun getSupportPolicies(
         @RequestParam("polyBizSecd") supportPolicyLocationType: SupportPolicyLocationType?,
         @RequestParam("polyRlmCd") policyType: String?,
@@ -38,6 +40,7 @@ class SupportController(
     }
 
     @GetMapping("/support/policy/{id}")
+    @Operation(summary = "지원 정책 상세 조회")
     fun getSupportPolicyDetail(
         @PathVariable("id") supportPolicyId: Long,
     ): ResponseEntity<ApiResponse<SupportPolicyDetail>> {
@@ -49,6 +52,7 @@ class SupportController(
     }
 
     @GetMapping("/support/business")
+    @Operation(summary = "지원 사업 목록 조회")
     fun getSupportBusiness(
         @RequestParam("category") supportBusinessCategoryType: SupportBusinessCategoryType?,
         @RequestParam("registerYear") registerYear: String?,
@@ -62,6 +66,7 @@ class SupportController(
     }
 
     @GetMapping("/support/business/{id}")
+    @Operation(summary = "지원 사업 상세 조회")
     fun getSupportBusinessDetail(
         @PathVariable("id") supportBusinessId: Long,
     ): ResponseEntity<ApiResponse<SupportBusinessDetail>> {
@@ -80,11 +85,13 @@ class SupportController(
     }
 
     @PostMapping("/support/policy")
+    @Operation(summary = "지원 정책 데이터 업데이트 (프론트 연동 x)")
     fun updateSupportPolicy() {
         supportPolicySchedulingService.updateSupportPolicy()
     }
 
     @PostMapping("/support/business")
+    @Operation(summary = "지원 사업 데이터 업데이트 (프론트 연동 x)")
     fun updateSupportBusiness() {
         supportBusinessSchedulingService.updateSupportBusiness()
     }

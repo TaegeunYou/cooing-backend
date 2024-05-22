@@ -10,6 +10,7 @@ import com.alpha.kooing.board.repository.BoardRepository
 import com.alpha.kooing.board.repository.CommentRepository
 import com.alpha.kooing.board.repository.LikesRepository
 import com.alpha.kooing.board.repository.ScrapRepository
+import com.alpha.kooing.common.Utils
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.user.repository.UserRepository
 import org.springframework.stereotype.Service
@@ -59,8 +60,8 @@ class BoardService(
             BoardSummary(
                 board.id!!,
                 board.title,
-                board.content.substringBefore("\n"),
-                board.createDatetime.toString(),
+                board.content.take(100),
+                Utils.dateTimeToFrontFormat(board.createDatetime),
                 board.comments.size
             )
         }.sortedByDescending { it.boardId }
@@ -76,7 +77,7 @@ class BoardService(
             board.likes.size,
             board.comments.size,
             board.scraps.size,
-            board.createDatetime.toString(),
+            Utils.dateTimeToFrontFormat(board.createDatetime),
             board.user.id!!,
             board.user.username,
             "",     //TODO
@@ -85,7 +86,7 @@ class BoardService(
                     comment.id!!,
                     comment.user.username,
                     comment.content,
-                    comment.createDatetime.toString()
+                    Utils.dateTimeToFrontFormat(comment.createDatetime)
                 )
             }
         )

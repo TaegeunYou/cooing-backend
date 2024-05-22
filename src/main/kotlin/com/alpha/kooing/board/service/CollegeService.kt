@@ -7,6 +7,7 @@ import com.alpha.kooing.board.entity.Volunteer
 import com.alpha.kooing.board.repository.ClubRepository
 import com.alpha.kooing.board.repository.StudyRepository
 import com.alpha.kooing.board.repository.VolunteerRepository
+import com.alpha.kooing.common.Utils
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.user.repository.UserRepository
 import org.springframework.stereotype.Service
@@ -49,8 +50,7 @@ class CollegeService(
             volunteer.title,
             volunteer.summary,
             volunteer.imageUrl,
-            volunteer.recruitStartDate.toString(),
-            volunteer.recruitEndDate.toString(),
+            Utils.dateRangeToFrontFormat(volunteer.recruitStartDate, volunteer.recruitEndDate),
             volunteer.content,
             volunteer.user.id!!
         )
@@ -98,8 +98,7 @@ class CollegeService(
             club.title,
             club.summary,
             club.imageUrl,
-            club.recruitStartDate.toString(),
-            club.recruitEndDate.toString(),
+            Utils.dateRangeToFrontFormat(club.recruitStartDate, club.recruitEndDate),
             club.content,
             club.user.id!!
         )
@@ -136,7 +135,7 @@ class CollegeService(
                 study.title,
                 study.category,
                 study.location,
-                study.createDatetime.toString()
+                Utils.dateTimeToFrontFormat(study.createDatetime),
             )
         }.sortedByDescending { it.studyId }
     }
