@@ -20,14 +20,14 @@ class JwtAuthenticationFilter(
         var authorization:String? = null
         val requestUri = request.requestURI
         println(requestUri)
-        if(requestUri.matches(regex = Regex("""^/login(?:/.*)?$"""))){
-            filterChain.doFilter(request, response)
-            return
-        }
-        if(requestUri.matches(regex = Regex("""^/oauth2(?:/.*)?$"""))){
-            filterChain.doFilter(request,response)
-            return
-        }
+//        if(requestUri.matches(regex = Regex("""^/login(?:/.*)?$"""))){
+//            filterChain.doFilter(request, response)
+//            return
+//        }
+//        if(requestUri.matches(regex = Regex("""^/oauth2(?:/.*)?$"""))){
+//            filterChain.doFilter(request,response)
+//            return
+//        }
         val cookies = request.cookies
         if(cookies == null){
             SecurityContextHolder.getContext().authentication = null

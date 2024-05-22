@@ -26,6 +26,7 @@ class CustomOAuth2SuccessHandler(
         response: HttpServletResponse,
         authentication: Authentication
     ) {
+        println("login success")
         val user = authentication.principal as CustomOAuth2User
         val email = user.email
         val userId = user.id
