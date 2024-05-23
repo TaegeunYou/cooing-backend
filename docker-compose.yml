@@ -21,7 +21,7 @@ services:
       - "9092:9092"
     # 환경 변수 설정
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: 211.253.28.114
+      KAFKA_ADVERTISED_HOST_NAME: localhost
       KAFKA_CREATE_TOPICS: "Topic:1:1"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181 
     # 볼륨 설정

@@ -87,7 +87,7 @@ class SecurityConfig(
                     //test용
                     .requestMatchers("/**").permitAll()
                     //"/login/oauth2/code/*", "/oauth2/authorization/*"
-                    .requestMatchers("/**").permitAll()
+
                     .requestMatchers("/").permitAll()
                     .requestMatchers("/login-info").permitAll()
                     .requestMatchers("/v3/api-docs/**").permitAll()
