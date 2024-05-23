@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import com.alpha.kooing.common.dto.ApiResponse
 import com.alpha.kooing.config.jwt.JwtTokenProvider
+import com.alpha.kooing.user.dto.*
+import com.alpha.kooing.user.service.UserService
 import com.alpha.kooing.user.dto.UpdateUserMatchingKeywordRequest
 import com.alpha.kooing.user.dto.UpdateUserMatchingStatusRequest
 import com.alpha.kooing.user.dto.UpdateUserProfileRequest
@@ -84,5 +86,16 @@ class UserController(
         val token = jwtTokenProvider.resolveToken(httpServletRequest)
         userService.updateUserMatchingKeyword(token, request)
         return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/user/checklist")
+    @Operation(summary = "자립 체크 리스트 조회")
+    fun getUserCheckList(
+    ): ResponseEntity<ApiResponse<GetUserCheckListResponse>> {
+        return ResponseEntity.ok(
+            ApiResponse.success(
+                userService.getUserCheckList()
+            )
+        )
     }
 }
