@@ -14,6 +14,8 @@ class SupportBusinessDto(
     val organizationContact: String, // 문의
     val files: List<SupportBusinessFile>,    //첨부파일
     var registerYear: String,
+    val idx: Int,
+    val imageUrl: String? = null,
 ) {
     class SupportBusinessFile(
         val fileName: String,

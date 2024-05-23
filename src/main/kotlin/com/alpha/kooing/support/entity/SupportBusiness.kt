@@ -34,4 +34,6 @@ class SupportBusiness(
     val filesJson: String,
     @Column(columnDefinition = "text")
     val registerYear: String,
+    @Column(columnDefinition = "text")
+    val idx: Int,
 )

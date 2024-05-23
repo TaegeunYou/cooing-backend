@@ -1,15 +1,7 @@
 package com.alpha.kooing.support.dto
 
-class JobPostingSummary(
+class JobPostingDetail(
     val id: Long,
-    val recrutPbancTtl: String? = null, // 채용공고제목
-    val instNm: String? = null, // 기관명
-    val pbancEndYmd: String? = null,    //	공고종료일자 [YYYYMMDD]
-    val workRgnNmLst: String? = null,   // 근무지역명목록
-    val acbgCondNmLst: String? = null,  // 학력조건명목록
-)
-
-/*
     val acbgCondLst: String? = null,    //	학력조건목록
     val acbgCondNmLst: String? = null,  // 학력조건명목록
     val aplyQlfcCn: String? = null, // 신청자격내용
@@ -38,4 +30,4 @@ class JobPostingSummary(
     val srcUrl: String? = null, // 출처URL
     val workRgnLst: String? = null, // 근무지역목록
     val workRgnNmLst: String? = null,   // 근무지역명목록
- */
+)

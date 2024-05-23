@@ -4,13 +4,13 @@ import com.alpha.kooing.support.dto.SupportBusinessDto
 import com.alpha.kooing.support.dto.SupportBusinessIdAndYearDto
 import com.alpha.kooing.support.repository.SupportBusinessRepository
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.sql.PreparedStatement
 import java.sql.SQLException
 
@@ -27,9 +27,9 @@ class SupportBusinessSchedulingService(
         val supportBusinessList = externalIds.map {
             parseSupportBusinessDetail(
                 requestSupportBusinessDetail(it.id),
-                it.year
+                it.year,
+                it.id
             )
-
         }
         supportBusinessRepository.deleteAllInBatch()
         this.bulkInsertSupportBusiness(supportBusinessList)
@@ -99,7 +99,7 @@ class SupportBusinessSchedulingService(
             }
     }
 
-    fun requestSupportBusinessDetail(id: Int): Document {
+    private fun requestSupportBusinessDetail(id: Int): Document {
         val document = Jsoup
             .connect("https://jaripon.ncrc.or.kr/home/kor/support/projectMng/edit.do")
             .method(Connection.Method.POST)
@@ -110,7 +110,7 @@ class SupportBusinessSchedulingService(
         return document
     }
 
-    private fun parseSupportBusinessDetail(document: Document, registerYear: String): SupportBusinessDto {
+    private fun parseSupportBusinessDetail(document: Document, registerYear: String, idx: Int): SupportBusinessDto {
         val title = document.select(".text_area").select(".title_area").select(".title").text()
         val category = document.select(".info_box").select(".icon01").select(".text_wrap").text()
         val location = document.select(".info_box").select(".icon02").select(".text_wrap").text()
@@ -145,17 +145,18 @@ class SupportBusinessSchedulingService(
             files.map {
                 SupportBusinessDto.SupportBusinessFile(it.first, it.second)
             },
-            registerYear
+            registerYear,
+            idx
         )
     }
 
     private fun bulkInsertSupportBusiness(supportBusinessList: List<SupportBusinessDto>) {
         val mapper = ObjectMapper()
-        val sql = ("INSERT INTO "
-                + "SUPPORT_BUSINESS "
-                + "(TITLE, CATEGORY, LOCATION, RECRUIT_PERIOD, RESULT_DATE, RECEPTION_METHOD, CHECK_RESULT_METHOD, CONTENT, "
-                + "ORGANIZATION_NAME, ORGANIZATION_PERSON, ORGANIZATION_CONTACT, FILES_JSON, REGISTER_YEAR)"
-                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        val sql = ("insert into "
+                + "support_business "
+                + "(title, category, location, recruit_period, result_date, reception_method, check_result_method, content, "
+                + "organization_name, organization_person, organization_contact, files_json, register_year, idx)"
+                + "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
         jdbcTemplate.batchUpdate(sql, object : BatchPreparedStatementSetter {
             @Throws(SQLException::class)
@@ -176,6 +177,7 @@ class SupportBusinessSchedulingService(
                     mapper.writeValueAsString(it)
                 }.toString())
                 ps.setString(13, supportBusiness.registerYear)
+                ps.setInt(14, supportBusiness.idx)
             }
 
             override fun getBatchSize(): Int {

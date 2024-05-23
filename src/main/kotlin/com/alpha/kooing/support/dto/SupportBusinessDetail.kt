@@ -16,7 +16,8 @@ class SupportBusinessDetail(
     val organizationPerson: String, // 담당자명
     val organizationContact: String, // 문의
     val files: List<SupportBusinessSummaryFile>,
-    val registerYear: String
+    val registerYear: String,
+    val imageUrl: String,
 ) {
 
     class SupportBusinessSummaryFile(

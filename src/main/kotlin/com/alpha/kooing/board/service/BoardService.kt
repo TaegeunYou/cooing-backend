@@ -61,7 +61,7 @@ class BoardService(
             BoardSummary(
                 board.id!!,
                 board.title,
-                board.content.take(100),
+                board.content.take(10),
                 Utils.dateTimeToFrontFormat(board.createDatetime),
                 board.comments.size
             )

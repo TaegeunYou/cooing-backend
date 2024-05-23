@@ -1,7 +1,7 @@
 package com.alpha.kooing.support.service
 
 import com.alpha.kooing.support.dto.SupportPolicyDto
-import com.alpha.kooing.support.enum.SupportPolicyLocationType
+import com.alpha.kooing.support.enum.SupportLocationType
 import com.alpha.kooing.support.enum.SupportPolicyPeriodType
 import com.alpha.kooing.support.enum.SupportPolicyType
 import com.alpha.kooing.support.repository.SupportPolicyRepository
@@ -88,12 +88,12 @@ class SupportPolicySchedulingService(
     }
 
     private fun bulkInsertSupportPolicy(supportPolicyList: List<SupportPolicyDto.YouthPolicyList.YouthPolicy>) {
-        val sql = ("INSERT INTO "
-                + "SUPPORT_POLICY "
-                + "(POLY_BIZ_SJNM, POLY_ITCN_CN, POLY_RLM_CD, SPOR_CN, RQUT_PRD_CN, BIZ_PRD_CN, SPOR_SCVL, PRD_RPTT_SECD, "
-                + "AGE_INFO, PRCP_CN, ACCR_RQIS_CN, MAJR_RQIS_CN, EMPM_STTS_CN, SPLZ_RLM_RQIS_CN, ADIT_RSCN, PRCP_LMTT_TRGT_CN, "
-                + "RQUT_PROC_CN, JDGN_PRES_CN, RQUT_URLA, PSTN_PAPR_CN, ETCT, MNGT_MSON, CNSG_NMOR, RFC_SITE_URLA1, RFC_SITE_URLA2, POLY_BIZ_SECD, BIZ_ID) "
-                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        val sql = ("insert into "
+                + "support_policy "
+                + "(poly_biz_sjnm, poly_itcn_cn, poly_rlm_cd, spor_cn, rqut_prd_cn, biz_prd_cn, spor_scvl, prd_rptt_secd, "
+                + "age_info, prcp_cn, accr_rqis_cn, majr_rqis_cn, empm_stts_cn, splz_rlm_rqis_cn, adit_rscn, prcp_lmtt_trgt_cn, "
+                + "rqut_proc_cn, jdgn_pres_cn, rqut_urla, pstn_papr_cn, etct, mngt_mson, cnsg_nmor, rfc_site_urla1, rfc_site_urla2, poly_biz_secd, biz_id) "
+                + "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
         jdbcTemplate.batchUpdate(sql, object : BatchPreparedStatementSetter {
             @Throws(SQLException::class)
@@ -144,13 +144,13 @@ class SupportPolicySchedulingService(
 
     private fun String?.locationCodeToName(): String? {
         if (this == null) return null
-        val supportPolicyLocationType = SupportPolicyLocationType.entries.firstOrNull { locationType ->
-            this.contains(locationType.code)
+        val supportLocationType = SupportLocationType.entries.firstOrNull { locationType ->
+            this.contains(locationType.supportPolicyCode)
         }
-        if (supportPolicyLocationType == null) {
+        if (supportLocationType == null) {
             return this
         }
-        return supportPolicyLocationType.name
+        return supportLocationType.name
     }
 
     private fun String?.policyCodeToName(): String? {

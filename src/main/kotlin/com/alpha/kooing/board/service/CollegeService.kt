@@ -60,6 +60,7 @@ class CollegeService(
     fun createVolunteer(token: String, request: CreateVolunteerRequest) {
         val userEmail = jwtTokenProvider.getJwtEmail(token)
         val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
+        val (recruitStartDate, recruitEndDate) = this.getStartAndEndDateByFrontFormat(request.recruitDate)
         volunteerRepository.save(
             Volunteer(
                 null,
@@ -67,8 +68,8 @@ class CollegeService(
                 request.title,
                 request.summary,
                 request.imageUrl,
-                LocalDate.parse(request.recruitStartDate, DateTimeFormatter.ISO_DATE),
-                LocalDate.parse(request.recruitEndDate, DateTimeFormatter.ISO_DATE),
+                recruitStartDate,
+                recruitEndDate,
                 request.content
             )
         )
@@ -108,6 +109,7 @@ class CollegeService(
     fun createClub(token: String, request: CreateClubRequest) {
         val userEmail = jwtTokenProvider.getJwtEmail(token)
         val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
+        val (recruitStartDate, recruitEndDate) = this.getStartAndEndDateByFrontFormat(request.recruitDate)
         clubRepository.save(
             Club(
                 null,
@@ -115,8 +117,8 @@ class CollegeService(
                 request.title,
                 request.summary,
                 request.imageUrl,
-                LocalDate.parse(request.recruitStartDate, DateTimeFormatter.ISO_DATE),
-                LocalDate.parse(request.recruitEndDate, DateTimeFormatter.ISO_DATE),
+                recruitStartDate,
+                recruitEndDate,
                 request.content
             )
         )
@@ -168,6 +170,21 @@ class CollegeService(
                 LocalDateTime.now()
             )
         )
+    }
+
+    //04.01 ~ 04.23 -> 2024.04.01, 2024.04.23
+    private fun getStartAndEndDateByFrontFormat(date: String): Pair<LocalDate, LocalDate> {
+        val recruitStartDate = LocalDate.of(
+            LocalDate.now().year,
+            date.substring(0..1).toInt(),
+            date.substring(3..4).toInt()
+        )
+        val recruitEndDate = LocalDate.of(
+            LocalDate.now().year,
+            date.substring(8..9).toInt(),
+            date.substring(11..12).toInt()
+        )
+        return recruitStartDate to recruitEndDate
     }
 
 }

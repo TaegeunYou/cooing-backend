@@ -6,7 +6,7 @@ package com.alpha.kooing.support.enum
   003002009 :강원 | 003002010 :충북 | 003002011 :충남 | 003002012 :전북 |
    003002013 :전남 | 003002014 :경북 | 003002015 :경남 | 003002016 :제주 | 003002017 :세종 |
  */
-enum class SupportPolicyLocationType(val code: String) {
+enum class SupportLocationType(val supportPolicyCode: String) {
     서울("003002001"),
     부산("003002002"),
     대구("003002003"),

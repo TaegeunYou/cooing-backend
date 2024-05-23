@@ -1,12 +1,10 @@
 package com.alpha.kooing.support.controller
 
 import com.alpha.kooing.common.dto.ApiResponse
-import com.alpha.kooing.support.dto.SupportBusinessDetail
-import com.alpha.kooing.support.dto.SupportBusinessSummary
-import com.alpha.kooing.support.dto.SupportPolicyDetail
-import com.alpha.kooing.support.dto.SupportPolicySummary
+import com.alpha.kooing.support.dto.*
 import com.alpha.kooing.support.enum.SupportBusinessCategoryType
-import com.alpha.kooing.support.enum.SupportPolicyLocationType
+import com.alpha.kooing.support.enum.SupportLocationType
+import com.alpha.kooing.support.service.JobPostingSchedulingService
 import com.alpha.kooing.support.service.SupportBusinessSchedulingService
 import com.alpha.kooing.support.service.SupportPolicySchedulingService
 import com.alpha.kooing.support.service.SupportService
@@ -23,18 +21,19 @@ class SupportController(
     private val supportService: SupportService,
     private val supportPolicySchedulingService: SupportPolicySchedulingService,
     private val supportBusinessSchedulingService: SupportBusinessSchedulingService,
+    private val jobPostingSchedulingService: JobPostingSchedulingService
 ) {
 
     @GetMapping("/support/policy")
     @Operation(summary = "지원 정책 목록 조회")
     fun getSupportPolicies(
-        @RequestParam("polyBizSecd") supportPolicyLocationType: SupportPolicyLocationType?,
+        @RequestParam("supportLocationType") supportLocationType: SupportLocationType?,
         @RequestParam("polyRlmCd") policyType: String?,
         @RequestParam("query") query: String?,
     ): ResponseEntity<ApiResponse<List<SupportPolicySummary>>> {
         return ResponseEntity.ok().body(
             ApiResponse.success(
-                supportService.getSupportPolicies(supportPolicyLocationType, policyType, query)
+                supportService.getSupportPolicies(supportLocationType, policyType, query)
             )
         )
     }
@@ -84,6 +83,30 @@ class SupportController(
         TODO()
     }
 
+    @GetMapping("/support/job")
+    fun getJobPostings(
+        @RequestParam("supportLocationType") supportLocationType: SupportLocationType?,
+        @RequestParam("ncsCdNmLst") jobType: String?,
+        @RequestParam("query") query: String?,
+    ): ResponseEntity<ApiResponse<List<JobPostingSummary>>> {
+        return ResponseEntity.ok().body(
+            ApiResponse.success(
+                supportService.getJobPostings(supportLocationType, jobType, query)
+            )
+        )
+    }
+
+    @GetMapping("/support/job/{id}")
+    fun getJobPostingDetail(
+        @PathVariable("id") jobPostingId: Long,
+    ): ResponseEntity<ApiResponse<JobPostingDetail>> {
+        return ResponseEntity.ok().body(
+            ApiResponse.success(
+                supportService.getJobPostingDetail(jobPostingId)
+            )
+        )
+    }
+
     @PostMapping("/support/policy")
     @Operation(summary = "지원 정책 데이터 업데이트 (프론트 연동 x)")
     fun updateSupportPolicy() {
@@ -96,17 +119,9 @@ class SupportController(
         supportBusinessSchedulingService.updateSupportBusiness()
     }
 
-//    @GetMapping
-//    fun getJobPosting(
-//        httpServletRequest: HttpServletRequest,
-//        @RequestParam("locationType") locationType: LocationType?,
-//        @RequestParam("policyType") jobType: JobType?,
-//        @RequestParam("query") query: String?,
-//    ): ResponseEntity<ApiResponse<List<JobPostingSummary>>> {
-//        return ResponseEntity.ok().body(
-//            ApiResponse.success(
-//                supportService.getSupportInfo(locationType, policyType, query)
-//            )
-//        )
-//    }
+    @PostMapping("/support/job")
+    @Operation(summary = "채용 공고 데이터 업데이트 (프론트 연동 x)")
+    fun updateSupportJob() {
+        jobPostingSchedulingService.updateJobPosting()
+    }
 }
