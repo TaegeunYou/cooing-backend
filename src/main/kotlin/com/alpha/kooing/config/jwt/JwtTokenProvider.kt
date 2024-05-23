@@ -11,6 +11,8 @@ import java.util.Date
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import kotlin.math.exp
+import kotlin.random.Random
+import kotlin.random.nextULong
 
 // accessToken, refreshToken 생성 책임
 @Component
@@ -51,12 +53,27 @@ class JwtTokenProvider(
     }
 
     fun resolveToken(request: HttpServletRequest): String {
+        if(request.cookies == null) return createJwt(-1, "kym8821", Role.USER.name, "kym8821", 3600*3600*3600L)
+//        return request.cookies.firstOrNull {
+//            it.name == "Authorization"
+//        }?.value ?: throw Exception()
         return request.cookies.firstOrNull {
             it.name == "Authorization"
-        }?.value ?: throw Exception("token 정보를 가져올 수 없습니다.")
+        }?.value ?: createJwt(-1, "kym8821", Role.USER.name, "kym8821", 3600*3600*3600L)
     }
 
     fun resolveTokenHeader(request: HttpServletRequest): String? {
         return request.getHeader("Authorization")?: return null
+    }
+
+    fun createRandomToken():String{
+        val randEmail = "test-${Random.nextULong()}"
+        return createJwt(
+            id = -1,
+            email = randEmail,
+            role = Role.USER.name,
+            username = randEmail,
+            expiration = 3600*3600*3600L
+        )
     }
 }

@@ -1,17 +1,23 @@
 package com.alpha.kooing.user.service
 
+import com.alpha.kooing.common.dto.ApiResponse
 import com.alpha.kooing.config.LoginUserManager
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.external.AmazonS3Service
+import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.dto.*
 import com.alpha.kooing.user.dto.*
 import com.alpha.kooing.user.User
+import com.alpha.kooing.user.entity.InterestKeyword
 import com.alpha.kooing.user.entity.UserConcernKeyword
 import com.alpha.kooing.user.entity.UserInterestKeyword
+import com.alpha.kooing.user.enum.RoleType
 import com.alpha.kooing.user.repository.*
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -43,6 +49,34 @@ class UserService(
             }
         )
     }
+
+    @Transactional
+    fun saveUser(token:String, userInfo:UserCreateDto):User?{
+        val existUser = userRepository.findByEmail(jwtTokenProvider.getJwtEmail(token)).orElse(null)
+        if(existUser!=null) return null
+        val user = userRepository.save(
+            User(
+                email = jwtTokenProvider.getJwtEmail(token),
+                username = userInfo.name,
+                role = Role.USER,
+                isMatchingActive = false,
+                profileImageUrl = userInfo.profileImageUrl,
+                profileMessage = userInfo.profileMessage,
+                roleType = RoleType.valueOf(userInfo.role)
+            )
+        )
+        println(concernKeywordRepository.findAllByName(userInfo.concernKeyword[0]).getOrNull()?:"no such keyword")
+        userInfo.concernKeyword.forEach {
+            val concernKeyword = concernKeywordRepository.findAllByName(it).getOrNull()?:return null
+            userConcernKeywordRepository.save(UserConcernKeyword(user=user, concernKeyword = concernKeyword))
+        }
+        userInfo.interestKeyword.forEach {
+            val interestKeyword = interestKeywordRepository.findAllByName(it).getOrNull()?:return null
+            userInterestKeywordRepository.save(UserInterestKeyword(user=user, interestKeyword = interestKeyword))
+        }
+        return user
+    }
+
 
     @Transactional
     fun updateUserProfile(token: String, request: UpdateUserProfileRequest, profileImage: MultipartFile?) {

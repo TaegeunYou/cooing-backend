@@ -36,7 +36,6 @@ class CustomOAuth2SuccessHandler(
         if(role == Role.USER.name){
             userManager.loginUser(userId, token)
         }
-        response.setHeader("Authorization", token)
         response.addCookie(createCookie("Authorization", token))
         response.sendRedirect("http://localhost:3000/")
     }

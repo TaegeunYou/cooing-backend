@@ -1,9 +1,7 @@
 package com.alpha.kooing.user.controller
 
-import com.alpha.kooing.util.CommonResDto
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
@@ -19,7 +17,6 @@ import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.client.RestTemplate
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
@@ -28,15 +25,15 @@ class UserController(
     private val userService: UserService,
 ){
     @GetMapping("/users")
-    fun findAllUsers() : CommonResDto<*>{
-        val result = userService.findAll() ?: return CommonResDto(HttpStatus.BAD_REQUEST, "Bad Request", null)
-        return CommonResDto(HttpStatus.OK, "OK", result)
+    fun findAllUsers() : ApiResponse<*>{
+        val result = userService.findAll() ?: return ApiResponse(HttpStatus.BAD_REQUEST.name, null)
+        return ApiResponse(HttpStatus.OK.name, result)
     }
 
     @GetMapping("/user/match")
-    fun findSimilarInterest(@RequestParam hobbies : List<String>) : CommonResDto<*>{
+    fun findSimilarInterest(@RequestParam hobbies : List<String>) : ApiResponse<*>{
         val users = userService.findMatchingUser()
-        return CommonResDto(HttpStatus.OK, "OK", users)
+        return ApiResponse(HttpStatus.OK.name, users)
     }
 
     @GetMapping("/user")

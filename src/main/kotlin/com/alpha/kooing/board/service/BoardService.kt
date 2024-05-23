@@ -31,6 +31,7 @@ class BoardService(
     @Transactional(readOnly = true)
     fun getBoards(token: String, boardType: BoardType?, query: String?): List<BoardSummary> {
         val userEmail = jwtTokenProvider.getJwtEmail(token)
+        println(userEmail)
         val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
         val boards = if (query != null) {
             boardRepository.findAllByTitleOrContentContaining(query)
