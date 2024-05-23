@@ -1,6 +1,5 @@
 package com.alpha.kooing.user.controller
 
-import com.alpha.kooing.user.service.UserService
 import com.alpha.kooing.util.CommonResDto
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping

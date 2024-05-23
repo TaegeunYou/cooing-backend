@@ -23,6 +23,7 @@ class UserService(
     private val userConcernKeywordRepository: UserConcernKeywordRepository,
     private val interestKeywordRepository: InterestKeywordRepository,
     private val concernKeywordRepository: ConcernKeywordRepository,
+    private val userManager: LoginUserManager
 ) {
 
     @Transactional(readOnly = true)
