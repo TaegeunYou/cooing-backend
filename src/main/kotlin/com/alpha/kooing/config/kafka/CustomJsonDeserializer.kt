@@ -12,6 +12,7 @@ class CustomJsonDeserializer<T>:JsonDeserializer<T>() {
         return try {
             val clazz = Class.forName(typeName) as Class<T>
             val obj = objectMapper.readValue(data, clazz)
+            println("deserialized: $obj")
             obj
         } catch (e: Exception) {
             e.printStackTrace()

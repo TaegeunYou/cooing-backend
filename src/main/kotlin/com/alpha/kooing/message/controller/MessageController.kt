@@ -18,6 +18,7 @@ class MessageController(
     fun sendToUser(@Payload message: UserMessage){
         val chat = chatService.save(message)?:return
         message.chatId = chat.id
+        println(message.toString())
         val res = producer.sendTemplate("chatting", message)
         if(res == null){
             println("produce error")
