@@ -23,14 +23,14 @@ class InitData(
 ){
     @EventListener(ApplicationReadyEvent::class)
     fun initData(){
-        val userList = createUser()
-        val chatRoomList:MutableList<ChatRoom> = mutableListOf()
-        for( user in userList){
-            chatRoomList.add(createChatRoom(user))
-        }
-        for( chatRoom in chatRoomList){
-            createChat(chatRoom)
-        }
+//        val userList = createUser()
+//        val chatRoomList:MutableList<ChatRoom> = mutableListOf()
+//        for( user in userList){
+//            chatRoomList.add(createChatRoom(user))
+//        }
+//        for( chatRoom in chatRoomList){
+//            createChat(chatRoom)
+//        }
     }
 
     fun createUser():MutableList<User>{

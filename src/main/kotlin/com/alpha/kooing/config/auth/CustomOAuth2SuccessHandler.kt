@@ -26,6 +26,7 @@ class CustomOAuth2SuccessHandler(
         response: HttpServletResponse,
         authentication: Authentication
     ) {
+        println("login success")
         val user = authentication.principal as CustomOAuth2User
         val email = user.email
         val userId = user.id
@@ -35,7 +36,6 @@ class CustomOAuth2SuccessHandler(
         if(role == Role.USER.name){
             userManager.loginUser(userId, token)
         }
-        response.setHeader("Authorization", token)
         response.addCookie(createCookie("Authorization", token))
         response.sendRedirect("http://localhost:3000/")
     }

@@ -2,6 +2,7 @@ package com.alpha.kooing.user
 
 import com.alpha.kooing.board.entity.*
 import com.alpha.kooing.chatMatching.entity.ChatMatching
+import com.alpha.kooing.user.dto.UserDetail
 import com.alpha.kooing.user.dto.UserResponseDto
 import com.alpha.kooing.user.entity.UserConcernKeyword
 import com.alpha.kooing.user.entity.UserInterestKeyword
@@ -67,6 +68,17 @@ class User(
             email = this.email,
             username = this.username,
             role = this.role
+        )
+    }
+
+    fun toUserDetail():UserDetail{
+        return UserDetail(
+            name = this.username,
+            role = this.roleType,
+            profileMessage = this.profileMessage,
+            profileImageUrl = this.profileImageUrl,
+            interestKeyword = this.userInterestKeyword.map { it.interestKeyword.name },
+            concernKeyword = this.userConcernKeyword.map { it.concernKeyword.name }
         )
     }
 

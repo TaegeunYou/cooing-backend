@@ -1,15 +1,14 @@
 package com.alpha.kooing.user.controller
 
-import com.alpha.kooing.user.service.UserService
-import com.alpha.kooing.util.CommonResDto
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import com.alpha.kooing.common.dto.ApiResponse
 import com.alpha.kooing.config.jwt.JwtTokenProvider
+import com.alpha.kooing.user.dto.*
+import com.alpha.kooing.user.service.UserService
 import com.alpha.kooing.user.dto.UpdateUserMatchingKeywordRequest
 import com.alpha.kooing.user.dto.UpdateUserMatchingStatusRequest
 import com.alpha.kooing.user.dto.UpdateUserProfileRequest
@@ -18,7 +17,6 @@ import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.client.RestTemplate
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
@@ -27,15 +25,15 @@ class UserController(
     private val userService: UserService,
 ){
     @GetMapping("/users")
-    fun findAllUsers() : CommonResDto<*>{
-        val result = userService.findAll() ?: return CommonResDto(HttpStatus.BAD_REQUEST, "Bad Request", null)
-        return CommonResDto(HttpStatus.OK, "OK", result)
+    fun findAllUsers() : ApiResponse<*>{
+        val result = userService.findAll() ?: return ApiResponse(HttpStatus.BAD_REQUEST.name, null)
+        return ApiResponse(HttpStatus.OK.name, result)
     }
 
     @GetMapping("/user/match")
-    fun findSimilarInterest(@RequestParam hobbies : List<String>) : CommonResDto<*>{
+    fun findSimilarInterest(@RequestParam hobbies : List<String>) : ApiResponse<*>{
         val users = userService.findMatchingUser()
-        return CommonResDto(HttpStatus.OK, "OK", users)
+        return ApiResponse(HttpStatus.OK.name, users)
     }
 
     @GetMapping("/user")
@@ -84,5 +82,16 @@ class UserController(
         val token = jwtTokenProvider.resolveToken(httpServletRequest)
         userService.updateUserMatchingKeyword(token, request)
         return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/user/checklist")
+    @Operation(summary = "자립 체크 리스트 조회")
+    fun getUserCheckList(
+    ): ResponseEntity<ApiResponse<GetUserCheckListResponse>> {
+        return ResponseEntity.ok(
+            ApiResponse.success(
+                userService.getUserCheckList()
+            )
+        )
     }
 }
