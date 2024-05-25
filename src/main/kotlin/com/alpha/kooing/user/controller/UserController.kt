@@ -26,6 +26,7 @@ class UserController(
 ){
     @GetMapping("/users")
     fun findAllUsers() : ApiResponse<*>{
+        println("hello")
         val result = userService.findAll() ?: return ApiResponse(HttpStatus.BAD_REQUEST.name, null)
         return ApiResponse(HttpStatus.OK.name, result)
     }
