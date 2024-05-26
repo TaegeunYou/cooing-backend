@@ -21,6 +21,8 @@ import kotlin.random.nextULong
 class JwtTokenProvider(
     @Value("\${spring.jwt.secretKey}") val secret: String
 ){
+    val expiration = 60 * 3600 * 3600L
+
     private final var secretKey:SecretKey
     init{
         secretKey = SecretKeySpec(secret.toByteArray(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().algorithm)

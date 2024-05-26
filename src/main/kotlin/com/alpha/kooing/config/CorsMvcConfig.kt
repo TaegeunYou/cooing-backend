@@ -17,11 +17,5 @@ class CorsMvcConfig : WebMvcConfigurer {
             .allowedMethods("*")
             .allowedOrigins(allowedOrigin)
             .allowCredentials(true)
-
-        corsRegistry.addMapping("/ws/**")
-            .allowedHeaders("*")
-            .allowedMethods("*")
-            .allowedOrigins(allowedOrigin)
-            .allowCredentials(true)
     }
 }
