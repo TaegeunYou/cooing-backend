@@ -40,7 +40,11 @@ class JwtTokenProvider(
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).payload["username"].toString()
     }
     fun isExpired(token: String):Boolean{
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).payload.expiration.before(Date(System.currentTimeMillis()))
+        return try {
+            Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).payload.expiration.before(Date(System.currentTimeMillis()))
+        }catch (e:Exception){
+            false
+        }
     }
     fun createJwt(id:Long?, email:String, role:String, username:String, expiration:Long): String {
         return Jwts.builder()
