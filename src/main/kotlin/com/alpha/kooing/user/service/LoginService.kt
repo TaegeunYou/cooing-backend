@@ -21,11 +21,11 @@ class LoginService(
     fun createCookieWithToken(token:String): ResponseCookie {
         val cookie = ResponseCookie
             .from("Authorization", token)
+            .domain("localhost")
             .path("/")
             .maxAge(jwtTokenProvider.expiration)
             .httpOnly(true)
             .sameSite("None")
-            .secure(true)
             .build()
         return cookie
     }

@@ -48,6 +48,8 @@ class LoginController(
             val userJwtToken = tokenInfo.getOrDefault("token", null)?:throw Exception()
             val userRole = tokenInfo.getOrDefault("role", null)?:throw Exception()
             response.setHeader("Set-Cookie", loginService.createCookieWithToken(userJwtToken).toString())
+            response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
+            response.setHeader("Access-Control-Allow-Credentials", "true")
             return ApiResponse("generate token success", userRole)
         }catch (e:Exception) {
             return ApiResponse("invalid token", Role.GUEST.name)
