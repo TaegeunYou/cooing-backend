@@ -58,8 +58,9 @@ class SupportPolicySchedulingService(
         supportPolicies.addAll(supportPolicy.youthPolicyList!!.youthPolicy!!)
         totalPageIndex = supportPolicy.youthPolicyList.totalCnt!! / display + 1
         for (pageIndex in 2..totalPageIndex) {
-            this.getSupportPolicyByExternal(display, pageIndex)
-            supportPolicies.addAll(supportPolicy.youthPolicyList.youthPolicy!!)
+            supportPolicies.addAll(
+                this.getSupportPolicyByExternal(display, pageIndex).youthPolicyList!!.youthPolicy!!
+            )
         }
         return supportPolicies
     }

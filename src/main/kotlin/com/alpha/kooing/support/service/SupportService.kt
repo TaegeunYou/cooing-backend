@@ -42,20 +42,20 @@ class SupportService(
         query: String?
     ): List<SupportPolicySummary> {
         val jpql = "select sp from SupportPolicy sp"
-        var whereSql = " where true "
+        var whereSql = " where true"
         val paramMap = mutableMapOf<String, String>()
         if (supportLocationType != null) {
-            whereSql += "and sp.polyBizSecd = :locationType"
+            whereSql += " and sp.polyBizSecd = :locationType"
             paramMap["locationType"] = supportLocationType.name
         }
         if (policyType != null) {
-            whereSql += "and sp.polyRlmCd = :supportPolicyType"
+            whereSql += " and sp.polyRlmCd = :supportPolicyType"
             paramMap["supportPolicyType"] = SupportPolicyType.entries.first {
                 it.value == policyType
             }.value
         }
         if (query != null) {
-            whereSql += "and (sp.polyBizSjnm like CONCAT('%',:keyword,'%') or sp.polyItcnCn like CONCAT('%',:keyword,'%'))"
+            whereSql += " and (sp.polyBizSjnm like CONCAT('%',:keyword,'%') or sp.polyItcnCn like CONCAT('%',:keyword,'%'))"
             paramMap["keyword"] = query
         }
         val sql = entityManager.createQuery(jpql + whereSql, SupportPolicy::class.java)
@@ -86,18 +86,18 @@ class SupportService(
         query: String?
     ): List<SupportBusinessSummary> {
         val jpql = "select sb from SupportBusiness sb"
-        var whereSql = " where true "
+        var whereSql = " where true"
         val paramMap = mutableMapOf<String, String>()
         if (supportBusinessCategoryType != null && supportBusinessCategoryType != SupportBusinessCategoryType.전체) {
-            whereSql += "and sb.category = :category"
+            whereSql += " and sb.category = :category"
             paramMap["category"] = supportBusinessCategoryType.name
         }
         if (registerYear != null) {
-            whereSql += "and sb.registerYear = :registerYear"
+            whereSql += " and sb.registerYear = :registerYear"
             paramMap["registerYear"] = registerYear
         }
         if (query != null) {
-            whereSql += "and (sb.title like CONCAT('%',:keyword,'%') or sb.content like CONCAT('%',:keyword,'%'))"
+            whereSql += " and (sb.title like CONCAT('%',:keyword,'%') or sb.content like CONCAT('%',:keyword,'%'))"
             paramMap["keyword"] = query
         }
         val sql = entityManager.createQuery(jpql + whereSql, SupportBusiness::class.java)
@@ -169,18 +169,18 @@ class SupportService(
         query: String?
     ): List<JobPostingSummary> {
         val jpql = "select jp from JobPosting jp"
-        var whereSql = " where true "
+        var whereSql = " where true"
         val paramMap = mutableMapOf<String, String>()
         if (supportLocationType != null) {
-            whereSql += "and jp.workRgnNmLst like CONCAT('%',:locationType,'%')"
+            whereSql += " and jp.workRgnNmLst like CONCAT('%',:locationType,'%')"
             paramMap["locationType"] = supportLocationType.name
         }
         if (jobType != null) {
-            whereSql += "and jp.ncsCdNmLst = :jobType"
+            whereSql += " and jp.ncsCdNmLst = :jobType"
             paramMap["jobType"] = jobType
         }
         if (query != null) {
-            whereSql += "and jp.recrutPbancTtl like CONCAT('%',:keyword,'%')"
+            whereSql += " and jp.recrutPbancTtl like CONCAT('%',:keyword,'%')"
             paramMap["keyword"] = query
         }
         val sql = entityManager.createQuery(jpql + whereSql, JobPosting::class.java)
