@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.util.Base64
 import java.util.Objects
+import kotlin.math.exp
 import kotlin.math.log
 
 @RestController
@@ -40,6 +41,11 @@ class LoginController(
 ){
     val expiration:Long = 3600 * 60 * 60L
 
+    @GetMapping("/test-user")
+    fun getTestUser():String{
+        return jwtTokenProvider.createJwt(-1, "kym8821", Role.USER.name, "kym8821", expiration)
+    }
+
     @PostMapping("/sign-in")
     fun signIn(response: HttpServletResponse, @RequestBody loginDto:UserLoginDto): ApiResponse<*>{
         try {
@@ -47,9 +53,7 @@ class LoginController(
             val tokenInfo = loginService.getLoginToken(token)?:throw Exception()
             val userJwtToken = tokenInfo.getOrDefault("token", null)?:throw Exception()
             val userRole = tokenInfo.getOrDefault("role", null)?:throw Exception()
-//            response.setHeader("Set-Cookie", loginService.createCookieWithToken(userJwtToken).toString())
-//            response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
-//            response.setHeader("Access-Control-Allow-Credentials", "true")
+            response.setHeader("Authorization", userJwtToken)
             return ApiResponse("generate token success", userJwtToken)
         }catch (e:Exception) {
             return ApiResponse("invalid token", null)

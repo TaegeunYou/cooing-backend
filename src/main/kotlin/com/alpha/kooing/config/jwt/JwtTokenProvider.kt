@@ -22,7 +22,7 @@ class JwtTokenProvider(
     @Value("\${spring.jwt.secretKey}") val secret: String
 ){
     val expiration = 60 * 3600 * 3600L
-
+    val bearerPrefix = "Bearer "
     private final var secretKey:SecretKey
     init{
         secretKey = SecretKeySpec(secret.toByteArray(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().algorithm)
@@ -59,13 +59,12 @@ class JwtTokenProvider(
     }
 
     fun resolveToken(request: HttpServletRequest): String {
-        if(request.cookies == null) return createJwt(-1, "kym8821", Role.USER.name, "kym8821", 3600*3600*3600L)
+        var token = request.getHeader("Authorization")?:createJwt(-1, "kym8821", Role.USER.name, "kym8821", expiration)
+        if(token.startsWith(bearerPrefix)){token = token.substring(bearerPrefix.length)}
+        return token
 //        return request.cookies.firstOrNull {
 //            it.name == "Authorization"
 //        }?.value ?: throw Exception()
-        return request.cookies.firstOrNull {
-            it.name == "Authorization"
-        }?.value ?: createJwt(-1, "kym8821", Role.USER.name, "kym8821", 3600*3600*3600L)
     }
 
     fun resolveTokenHeader(request: HttpServletRequest): String? {

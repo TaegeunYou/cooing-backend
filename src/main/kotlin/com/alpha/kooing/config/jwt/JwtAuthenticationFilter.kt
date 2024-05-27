@@ -30,11 +30,12 @@ class JwtAuthenticationFilter(
             return
         }
 
-        var authorization: String? = null
-        val cookies = request.cookies
-        if(cookies != null) authorization = cookies.firstOrNull { it.name == "Authorization" }?.value
+//        var authorization: String? = null
+//        val cookies = request.cookies
+//        if(cookies != null) authorization = cookies.firstOrNull { it.name == "Authorization" }?.value
 
-
+        val authorization = jwtTokenProvider.resolveToken(request)
+        println(jwtTokenProvider.getJwtEmail(authorization))
 
         if(authorization == null || jwtTokenProvider.isExpired(authorization)){
             SecurityContextHolder.getContext().authentication = null
