@@ -75,8 +75,7 @@ class LoginController(
                 expiration = expiration
             )
             userManager.loginUser(user.id, newToken)
-            response.addCookie(Cookie("Authorization", newToken))
-            return ApiResponse(HttpStatus.OK.name, user.toUserDetail())
+            return ApiResponse(HttpStatus.OK.name, newToken)
         }catch (e:Exception){
             e.printStackTrace()
             return ApiResponse(HttpStatus.BAD_REQUEST.name, null)
