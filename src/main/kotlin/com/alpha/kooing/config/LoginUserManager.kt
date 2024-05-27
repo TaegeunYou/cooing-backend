@@ -3,11 +3,13 @@ package com.alpha.kooing.config
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.dto.UserResponseDto
+import com.alpha.kooing.user.repository.UserRepository
 import org.springframework.stereotype.Component
 
 @Component
 class LoginUserManager(
-    val jwtTokenProvider: JwtTokenProvider
+    val jwtTokenProvider: JwtTokenProvider,
+    val userRepository: UserRepository
 ){
     companion object {
         private val users = mutableMapOf<Long, String>()
@@ -42,14 +44,7 @@ class LoginUserManager(
                 users.remove(user.key)
                 null
             }else{
-                println(token)
-                val userDto = UserResponseDto(
-                    id = user.key,
-                    username = jwtTokenProvider.getJwtUsername(token),
-                    email = jwtTokenProvider.getJwtEmail(token),
-                    role = Role.valueOf(jwtTokenProvider.getJwtRole(token))
-                )
-                userDto
+                userRepository.findByEmail(jwtTokenProvider.getJwtEmail(token)).orElse(null).toResponseDto()
             }
         }.filterNotNull()
         return userList

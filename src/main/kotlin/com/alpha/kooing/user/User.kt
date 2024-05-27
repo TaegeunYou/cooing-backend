@@ -67,7 +67,11 @@ class User(
             id=this.id,
             email = this.email,
             username = this.username,
-            role = this.role
+            role = this.role,
+            profileMessage = this.profileMessage,
+            profileImageUrl = this.profileImageUrl,
+            userConcernKeyword = this.userConcernKeyword.map { it.concernKeyword.name },
+            userInterestKeyword = this.userInterestKeyword.map { it.interestKeyword.name }
         )
     }
 

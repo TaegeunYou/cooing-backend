@@ -1,23 +1,19 @@
 package com.alpha.kooing.user.service
 
-import com.alpha.kooing.common.dto.ApiResponse
 import com.alpha.kooing.config.LoginUserManager
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.external.AmazonS3Service
 import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.dto.*
-import com.alpha.kooing.user.dto.*
 import com.alpha.kooing.user.User
-import com.alpha.kooing.user.entity.InterestKeyword
+import com.alpha.kooing.user.entity.ConcernKeyword
 import com.alpha.kooing.user.entity.UserConcernKeyword
 import com.alpha.kooing.user.entity.UserInterestKeyword
 import com.alpha.kooing.user.enum.RoleType
 import com.alpha.kooing.user.repository.*
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -125,9 +121,6 @@ class UserService(
     @Transactional
     fun findAll(): List<UserResponseDto>?{
         val result = userRepository.findAll()
-        if(result.isEmpty()){
-            return null
-        }
         return result.map { it.toResponseDto() }
     }
     /**
@@ -187,8 +180,18 @@ class UserService(
     }
 
     @Transactional
-    fun findMatchingUser(): List<UserResponseDto>?{
+    fun findMatchingUser(ikw:List<String>, ckw:MutableList<String>): List<UserResponseDto>{
         val users = userManager.getLoginUserList()
-        return users
+        val matchUser = users.map { it ->
+            val user = userRepository.findByEmail(it.email).orElse(null)
+            if(user == null){
+                null
+            }else{
+                val checkCkw = user.userConcernKeyword.any{ it.concernKeyword.name in ckw }
+                val checkIkw = user.userInterestKeyword.any { it.interestKeyword.name in ikw }
+                if(checkIkw && checkCkw) user.toResponseDto() else null
+            }
+        }.filterNotNull()
+        return matchUser
     }
 }

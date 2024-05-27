@@ -26,14 +26,13 @@ class UserController(
 ){
     @GetMapping("/users")
     fun findAllUsers() : ApiResponse<*>{
-        println("hello")
         val result = userService.findAll() ?: return ApiResponse(HttpStatus.BAD_REQUEST.name, null)
         return ApiResponse(HttpStatus.OK.name, result)
     }
 
     @GetMapping("/user/match")
-    fun findSimilarInterest(@RequestParam hobbies : List<String>) : ApiResponse<*>{
-        val users = userService.findMatchingUser()
+    fun findSimilarInterest(@RequestParam ikw:MutableList<String>, @RequestParam ckw:MutableList<String>) : ApiResponse<*>{
+        val users = userService.findMatchingUser(ikw, ckw)
         return ApiResponse(HttpStatus.OK.name, users)
     }
 
