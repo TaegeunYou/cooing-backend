@@ -38,7 +38,8 @@ class CollegeService(
                 volunteer.id!!,
                 volunteer.title,
                 volunteer.summary,
-                volunteer.imageUrl
+                volunteer.imageUrl,
+                Utils.dateTimeToFrontFormat(volunteer.createDatetime)
             )
         }.sortedByDescending { it.volunteerId }
     }
@@ -70,7 +71,8 @@ class CollegeService(
                 request.imageUrl,
                 recruitStartDate,
                 recruitEndDate,
-                request.content
+                request.content,
+                LocalDateTime.now()
             )
         )
     }
@@ -87,7 +89,8 @@ class CollegeService(
                 club.id!!,
                 club.title,
                 club.summary,
-                club.imageUrl
+                club.imageUrl,
+                Utils.dateTimeToFrontFormat(club.createDatetime)
             )
         }.sortedByDescending { it.clubId }
     }
@@ -119,7 +122,8 @@ class CollegeService(
                 request.imageUrl,
                 recruitStartDate,
                 recruitEndDate,
-                request.content
+                request.content,
+                LocalDateTime.now()
             )
         )
     }

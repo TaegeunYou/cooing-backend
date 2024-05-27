@@ -4,5 +4,6 @@ class ClubSummary(
     val clubId: Long,
     val title: String,
     val summary: String,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val createDatetime: String
 )
