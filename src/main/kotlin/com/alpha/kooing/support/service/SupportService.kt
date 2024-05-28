@@ -230,11 +230,12 @@ class SupportService(
                 it.id!!,
                 it.recrutPbancTtl,
                 it.instNm,
-                it.pbancEndYmd?.let {
-                    "~${it.substring(4..5)}.${it.substring(6..7)}"
-                },
+//                it.pbancEndYmd?.let {
+//                    "~${it.substring(4..5)}.${it.substring(6..7)}"
+//                },
                 it.workRgnNmLst,
                 it.acbgCondNmLst,
+                it.recrutSeNm
             )
         }
     }

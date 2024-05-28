@@ -94,6 +94,7 @@ class SupportController(
     }
 
     @GetMapping("/support/job")
+    @Operation(summary = "지원 정책 목록 조회")
     fun getJobPostings(
         @RequestParam("supportLocationType") supportLocationType: SupportLocationType?,
         @RequestParam("ncsCdNmLst") jobType: String?,
@@ -110,6 +111,7 @@ class SupportController(
     }
 
     @GetMapping("/support/job/{id}")
+    @Operation(summary = "지원 정책 상세 조회")
     fun getJobPostingDetail(
         @PathVariable("id") jobPostingId: Long,
     ): ResponseEntity<ApiResponse<JobPostingDetail>> {

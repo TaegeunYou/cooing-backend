@@ -4,9 +4,9 @@ class JobPostingSummary(
     val id: Long,
     val recrutPbancTtl: String? = null, // 채용공고제목
     val instNm: String? = null, // 기관명
-    val pbancEndYmd: String? = null,    //	공고종료일자 [YYYYMMDD]
     val workRgnNmLst: String? = null,   // 근무지역명목록
     val acbgCondNmLst: String? = null,  // 학력조건명목록
+    val recrutSeNm: String? = null, // 채용구분명
 )
 
 /*
