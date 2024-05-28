@@ -6,6 +6,7 @@ import com.alpha.kooing.board.entity.Comment
 import com.alpha.kooing.board.entity.Likes
 import com.alpha.kooing.board.entity.Scrap
 import com.alpha.kooing.board.enum.BoardType
+import com.alpha.kooing.board.event.*
 import com.alpha.kooing.board.repository.BoardRepository
 import com.alpha.kooing.board.repository.CommentRepository
 import com.alpha.kooing.board.repository.LikesRepository
@@ -13,6 +14,7 @@ import com.alpha.kooing.board.repository.ScrapRepository
 import com.alpha.kooing.common.Utils
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.user.repository.UserRepository
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -26,6 +28,7 @@ class BoardService(
     private val commentRepository: CommentRepository,
     private val likesRepository: LikesRepository,
     private val scrapRepository: ScrapRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
 
     @Transactional(readOnly = true)
@@ -109,6 +112,10 @@ class BoardService(
                 LocalDateTime.now()
             )
         )
+        when (user.boards.size) {
+            1 -> applicationEventPublisher.publishEvent(Post1BoardEvent(user))
+            3 -> applicationEventPublisher.publishEvent(Post3BoardEvent(user))
+        }
     }
 
     @Transactional
@@ -148,6 +155,10 @@ class BoardService(
                 LocalDateTime.now()
             )
         )
+        when (user.comments.size) {
+            1 -> applicationEventPublisher.publishEvent(Comment1BoardEvent(user))
+            5 -> applicationEventPublisher.publishEvent(Comment5BoardEvent(user))
+        }
     }
 
     @Transactional
@@ -182,6 +193,10 @@ class BoardService(
             throw Exception("이미 좋아요를 누른 게시물입니다.")
         }
         likesRepository.save(Likes(null, user, board))
+        when (user.likes.size) {
+            1 -> applicationEventPublisher.publishEvent(Like1BoardEvent(user))
+            5 -> applicationEventPublisher.publishEvent(Like5BoardEvent(user))
+        }
     }
 
     @Transactional
@@ -201,6 +216,10 @@ class BoardService(
             throw Exception("이미 스크랩한 게시물입니다.")
         }
         scrapRepository.save(Scrap(null, user, board))
+        when (user.scraps.size) {
+            1 -> applicationEventPublisher.publishEvent(Scrap1BoardEvent(user))
+            5 -> applicationEventPublisher.publishEvent(Scrap5BoardEvent(user))
+        }
     }
 
     @Transactional

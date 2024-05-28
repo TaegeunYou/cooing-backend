@@ -9,4 +9,10 @@ class UserDetail(
     val profileImageUrl: String?,
     val interestKeyword: List<String>,
     val concernKeyword: List<String>,
-)
+    val rewards: List<RewardDetail>
+) {
+    class RewardDetail(
+        val name: String,
+        val count: Int
+    )
+}

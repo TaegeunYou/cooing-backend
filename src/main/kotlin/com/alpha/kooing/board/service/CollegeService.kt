@@ -4,12 +4,14 @@ import com.alpha.kooing.board.dto.*
 import com.alpha.kooing.board.entity.Club
 import com.alpha.kooing.board.entity.Study
 import com.alpha.kooing.board.entity.Volunteer
+import com.alpha.kooing.board.event.PostStudyVolunteerClub1Event
 import com.alpha.kooing.board.repository.ClubRepository
 import com.alpha.kooing.board.repository.StudyRepository
 import com.alpha.kooing.board.repository.VolunteerRepository
 import com.alpha.kooing.common.Utils
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.user.repository.UserRepository
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -23,7 +25,8 @@ class CollegeService(
     private val volunteerRepository: VolunteerRepository,
     private val clubRepository: ClubRepository,
     private val studyRepository: StudyRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
 
     @Transactional(readOnly = true)
@@ -75,6 +78,9 @@ class CollegeService(
                 LocalDateTime.now()
             )
         )
+        if (user.studies.size + user.volunteers.size + user.studies.size == 1) {
+            applicationEventPublisher.publishEvent(PostStudyVolunteerClub1Event(user))
+        }
     }
 
     @Transactional(readOnly = true)
@@ -126,6 +132,9 @@ class CollegeService(
                 LocalDateTime.now()
             )
         )
+        if (user.studies.size + user.volunteers.size + user.studies.size == 1) {
+            applicationEventPublisher.publishEvent(PostStudyVolunteerClub1Event(user))
+        }
     }
 
     @Transactional(readOnly = true)
@@ -174,6 +183,9 @@ class CollegeService(
                 LocalDateTime.now()
             )
         )
+        if (user.studies.size + user.volunteers.size + user.studies.size == 1) {
+            applicationEventPublisher.publishEvent(PostStudyVolunteerClub1Event(user))
+        }
     }
 
     //04.01 ~ 04.23 -> 2024.04.01, 2024.04.23

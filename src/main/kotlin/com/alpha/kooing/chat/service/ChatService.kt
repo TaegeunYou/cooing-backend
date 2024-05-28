@@ -2,19 +2,21 @@ package com.alpha.kooing.chat.service
 
 import com.alpha.kooing.chat.dto.ChatResponseDto
 import com.alpha.kooing.chat.entity.Chat
+import com.alpha.kooing.chat.event.*
 import com.alpha.kooing.chat.repository.ChatRepository
 import com.alpha.kooing.chatRoom.repository.ChatRoomRepository
 import com.alpha.kooing.message.dto.UserMessage
 import com.alpha.kooing.user.repository.UserRepository
 import jakarta.transaction.Transactional
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
-import java.util.Optional
 
 @Service
 class ChatService(
     val chatRoomRepository: ChatRoomRepository,
     val userRepository: UserRepository,
     val chatRepository: ChatRepository,
+    val applicationEventPublisher: ApplicationEventPublisher
 ){
     @Transactional
     fun save(message:UserMessage):Chat?{
@@ -23,6 +25,16 @@ class ChatService(
         val chatRoom = chatRoomRepository.findById(message.roomId).get()
         val user = userRepository.findById(message.senderId).get()
         val chat = Chat(content = message.content, chatRoom = chatRoom, user = user, unread = 1)
+        when (user.chats.size) {
+            100 -> applicationEventPublisher.publishEvent(Chat100Event(user))
+            200 -> applicationEventPublisher.publishEvent(Chat200Event(user))
+            300 -> applicationEventPublisher.publishEvent(Chat300Event(user))
+        }
+        when (user.chats.distinctBy { it.createdAt.toLocalDate() }.size) {
+            1 -> applicationEventPublisher.publishEvent(ChatWithMateOver1DayEvent(user))
+            3 -> applicationEventPublisher.publishEvent(ChatWithMateOver3DayEvent(user))
+            5 -> applicationEventPublisher.publishEvent(ChatWithMateOver5DayEvent(user))
+        }
         return chatRepository.save(chat)
     }
 

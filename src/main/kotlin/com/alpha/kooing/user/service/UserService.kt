@@ -10,7 +10,9 @@ import com.alpha.kooing.user.entity.ConcernKeyword
 import com.alpha.kooing.user.entity.UserConcernKeyword
 import com.alpha.kooing.user.entity.UserInterestKeyword
 import com.alpha.kooing.user.enum.RoleType
+import com.alpha.kooing.user.event.SignUpEvent
 import com.alpha.kooing.user.repository.*
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -25,7 +27,8 @@ class UserService(
     private val userConcernKeywordRepository: UserConcernKeywordRepository,
     private val interestKeywordRepository: InterestKeywordRepository,
     private val concernKeywordRepository: ConcernKeywordRepository,
-    private val userManager: LoginUserManager
+    private val userManager: LoginUserManager,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
 
     @Transactional(readOnly = true)
@@ -42,6 +45,14 @@ class UserService(
             },
             user.userConcernKeyword.map {
                 it.concernKeyword.name
+            },
+            user.userRewards.groupBy {
+                it.reward.rewardType
+            }.map {
+                UserDetail.RewardDetail(
+                    it.key.name,
+                    it.value.size
+                )
             }
         )
     }
@@ -58,7 +69,8 @@ class UserService(
                 isMatchingActive = false,
                 profileImageUrl = userInfo.profileImageUrl,
                 profileMessage = userInfo.profileMessage,
-                roleType = RoleType.valueOf(userInfo.role)
+                roleType = RoleType.valueOf(userInfo.role),
+
             )
         )
         println(concernKeywordRepository.findAllByName(userInfo.concernKeyword[0]).getOrNull()?:"no such keyword")
@@ -70,6 +82,7 @@ class UserService(
             val interestKeyword = interestKeywordRepository.findAllByName(it).getOrNull()?:return null
             userInterestKeywordRepository.save(UserInterestKeyword(user=user, interestKeyword = interestKeyword))
         }
+        applicationEventPublisher.publishEvent(SignUpEvent(user))
         return user
     }
 
