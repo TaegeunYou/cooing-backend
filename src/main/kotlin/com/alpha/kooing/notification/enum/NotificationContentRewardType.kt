@@ -1,4 +1,4 @@
 package com.alpha.kooing.notification.enum
 
-enum class NotificationType {
+enum class NotificationContentRewardType {
 }

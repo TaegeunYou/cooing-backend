@@ -31,7 +31,7 @@ class UserController(
     }
 
     @GetMapping("/user/match")
-    fun findSimilarInterest(@RequestParam ikw:MutableList<String>, @RequestParam ckw:MutableList<String>) : ApiResponse<*>{
+    fun findSimilarInterest(@RequestParam ikw:MutableList<String>, @RequestParam ckw:MutableList<String>) : ApiResponse<List<UserResponseDto>>{
         val users = userService.findMatchingUser(ikw, ckw)
         return ApiResponse(HttpStatus.OK.name, users)
     }

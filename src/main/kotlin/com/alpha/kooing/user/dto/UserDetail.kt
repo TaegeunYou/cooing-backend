@@ -9,7 +9,8 @@ class UserDetail(
     val profileImageUrl: String?,
     val interestKeyword: List<String>,
     val concernKeyword: List<String>,
-    val rewards: List<RewardDetail>
+    val rewards: List<RewardDetail>,
+    val isMatchingActive: Boolean,
 ) {
     class RewardDetail(
         val name: String,

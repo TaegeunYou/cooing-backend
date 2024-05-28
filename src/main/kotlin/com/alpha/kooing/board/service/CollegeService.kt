@@ -10,10 +10,12 @@ import com.alpha.kooing.board.repository.StudyRepository
 import com.alpha.kooing.board.repository.VolunteerRepository
 import com.alpha.kooing.common.Utils
 import com.alpha.kooing.config.jwt.JwtTokenProvider
+import com.alpha.kooing.external.AmazonS3Service
 import com.alpha.kooing.user.repository.UserRepository
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -26,7 +28,8 @@ class CollegeService(
     private val clubRepository: ClubRepository,
     private val studyRepository: StudyRepository,
     private val userRepository: UserRepository,
-    private val applicationEventPublisher: ApplicationEventPublisher
+    private val applicationEventPublisher: ApplicationEventPublisher,
+    private val amazonS3Service: AmazonS3Service
 ) {
 
     @Transactional(readOnly = true)
@@ -71,7 +74,7 @@ class CollegeService(
                 user,
                 request.title,
                 request.summary,
-                request.imageUrl,
+                null,
                 recruitStartDate,
                 recruitEndDate,
                 request.content,
@@ -115,17 +118,20 @@ class CollegeService(
     }
 
     @Transactional
-    fun createClub(token: String, request: CreateClubRequest) {
+    fun createClub(token: String, request: CreateClubRequest, image: MultipartFile?) {
         val userEmail = jwtTokenProvider.getJwtEmail(token)
         val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
         val (recruitStartDate, recruitEndDate) = this.getStartAndEndDateByFrontFormat(request.recruitDate)
+        val imageUrl = if (image != null) {
+            amazonS3Service.upload(image, "club")
+        } else null
         clubRepository.save(
             Club(
                 null,
                 user,
                 request.title,
                 request.summary,
-                request.imageUrl,
+                imageUrl,
                 recruitStartDate,
                 recruitEndDate,
                 request.content,

@@ -3,10 +3,11 @@ package com.alpha.kooing.reward.service
 import com.alpha.kooing.reward.entity.Reward
 import com.alpha.kooing.reward.entity.UserReward
 import com.alpha.kooing.reward.enum.RewardRequirementType
-import com.alpha.kooing.reward.enum.RewardType
+import com.alpha.kooing.reward.event.ProvideRewardEvent
 import com.alpha.kooing.reward.repository.RewardRepository
 import com.alpha.kooing.reward.repository.UserRewardRepository
 import com.alpha.kooing.user.User
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 class RewardService(
     private val userRewardRepository: UserRewardRepository,
     private val rewardRepository: RewardRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
 
     @Transactional
@@ -28,7 +30,7 @@ class RewardService(
                     rewardRequirementType
                 )
             )
-            //TODO 리워드 지급 알림 생성
+            applicationEventPublisher.publishEvent(ProvideRewardEvent(user, rewardRequirementType))
         }
     }
 

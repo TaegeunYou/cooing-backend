@@ -95,6 +95,9 @@ class User(
     @Column(nullable = false)
     var lastLoginDatetime: LocalDateTime = LocalDateTime.now(),
 
+    @Column(nullable = false)
+    var house: String = "",
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id:Long? = null
@@ -127,8 +130,8 @@ class User(
                     it.key.name,
                     it.value.size
                 )
-            }
-
+            },
+            this.isMatchingActive
         )
     }
 
@@ -151,6 +154,10 @@ class User(
 
     fun attend() {
         this.attendanceCount++
+    }
+
+    fun updateHouse(houseStringFormat: String) {
+        this.house = houseStringFormat
     }
 
 }
