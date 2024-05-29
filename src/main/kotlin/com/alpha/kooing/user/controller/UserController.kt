@@ -31,8 +31,11 @@ class UserController(
     }
 
     @GetMapping("/user/match")
-    fun findSimilarInterest(@RequestParam ikw:MutableList<String>, @RequestParam ckw:MutableList<String>) : ApiResponse<List<UserResponseDto>>{
-        val users = userService.findMatchingUser(ikw, ckw)
+    @Operation(summary = "현재 로그인한 유저 매칭 정보 생성. 만약 매칭 정보가 없다면 새로 생성해서 제공")
+    fun findSimilarInterest(request: HttpServletRequest) : ApiResponse<List<UserResponseDto>>{
+        val token = jwtTokenProvider.resolveToken(request)
+        val userId = jwtTokenProvider.getJwtUserId(token).toLong()
+        val users = userService.findOrCreateMatchUser(userId)
         return ApiResponse(HttpStatus.OK.name, users)
     }
 

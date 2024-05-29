@@ -42,8 +42,21 @@ class LoginController(
     val expiration:Long = 3600 * 60 * 60L
 
     @GetMapping("/test-user")
-    fun getTestUser():String{
-        return jwtTokenProvider.createJwt(-1, "kym8821", Role.USER.name, "kym8821", expiration)
+    fun getTestUser():ApiResponse<*>{
+        val users = userService.findAll()?:return ApiResponse(HttpStatus.BAD_REQUEST.name, null)
+        val user = users.getOrNull(0)?:return ApiResponse(HttpStatus.BAD_REQUEST.name, null)
+        val token = jwtTokenProvider.createJwt(
+            id = user.id,
+            email = user.email,
+            username = user.username,
+            role = user.role.name,
+            expiration = jwtTokenProvider.expiration
+        )
+        userManager.loginUser(user.id, token)
+        return ApiResponse(
+            message = HttpStatus.OK.name,
+            body = token
+        )
     }
 
     @PostMapping("/sign-in")

@@ -8,6 +8,7 @@ import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.dto.*
 import com.alpha.kooing.user.User
 import com.alpha.kooing.user.entity.ConcernKeyword
+import com.alpha.kooing.user.entity.MatchUser
 import com.alpha.kooing.user.entity.UserConcernKeyword
 import com.alpha.kooing.user.entity.UserInterestKeyword
 import com.alpha.kooing.user.enum.RoleType
@@ -35,7 +36,8 @@ class UserService(
     private val concernKeywordRepository: ConcernKeywordRepository,
     private val userMatchingRepository: UserMatchingRepository,
     private val userManager: LoginUserManager,
-    private val applicationEventPublisher: ApplicationEventPublisher
+    private val applicationEventPublisher: ApplicationEventPublisher,
+    private val matchUserRepository: MatchUserRepository
 ) {
 
     @Transactional(readOnly = true)
@@ -115,6 +117,9 @@ class UserService(
     fun updateUserMatchingStatus(token: String, request: UpdateUserMatchingStatusRequest) {
         val userEmail = jwtTokenProvider.getJwtEmail(token)
         val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
+        // 매칭 취소 시 매칭 정보 제거
+        if (!request.isMatchingActive && user.id!=null) matchUserRepository.deleteAllByUserId(user.id)
+        // 정보 갱신
         user.updateMatchingStatus(request.isMatchingActive)
         userRepository.save(user)
     }
@@ -206,19 +211,33 @@ class UserService(
     }
 
     @Transactional
-    fun findMatchingUser(ikw:List<String>, ckw:MutableList<String>): List<UserResponseDto>{
+    fun findMatchingUser(ikw:List<String>, ckw:List<String>, userId:Long): List<User>{
         val users = userManager.getLoginUserList()
         val matchUser = users.map { it ->
             val user = userRepository.findByEmail(it.email).orElse(null)
-            if(user == null){
+            if(user == null || user.id == userId){
                 null
             }else{
                 val checkCkw = user.userConcernKeyword.any{ it.concernKeyword.name in ckw }
                 val checkIkw = user.userInterestKeyword.any { it.interestKeyword.name in ikw }
-                if(checkIkw && checkCkw) user.toResponseDto() else null
+                if(checkIkw && checkCkw) user else null
             }
         }.filterNotNull()
         return matchUser
+    }
+
+    @Transactional
+    fun findOrCreateMatchUser(userId:Long):List<UserResponseDto>?{
+        val currentUser = userRepository.findById(userId).orElse(null)?:return null
+        var matchUsers = matchUserRepository.findAllByUserId(userId)
+        if(matchUsers.isEmpty()){
+            val ckw = currentUser.userConcernKeyword.map { it.concernKeyword.name }
+            val ikw = currentUser.userInterestKeyword.map { it.interestKeyword.name }
+                val keywordMatchUsers = findMatchingUser(ikw, ckw, userId)
+            keywordMatchUsers.forEach{ matchUserRepository.save(MatchUser(user = currentUser, matchUser = it)) }
+            return keywordMatchUsers.map { it.toResponseDto() }
+        }
+        return matchUsers.map { it.user.toResponseDto() }
     }
 
     private fun updateUserMatchingKeywordEvent(user: User) {

@@ -1,5 +1,6 @@
 package com.alpha.kooing.chatRoom.repository
 
+import com.alpha.kooing.chatRoom.entity.ChatRoom
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.springframework.stereotype.Repository
@@ -8,7 +9,7 @@ import org.springframework.stereotype.Repository
 class CustomChatRoomRepositoryImpl(
     @PersistenceContext val entityManager: EntityManager
 ):CustomChatRoomRepository{
-    override fun findByUserList(userIdList: List<String>): MutableList<*>? {
+    override fun findByUserList(userIdList: List<Long>): ChatRoom? {
         val userCount = userIdList.size
         val query = """
             SELECT cr FROM ChatRoom cr WHERE cr.id IN (
@@ -22,7 +23,7 @@ class CustomChatRoomRepositoryImpl(
         val jpaQuery = entityManager.createQuery(query)
         jpaQuery.setParameter("userIdList", userIdList)
         jpaQuery.setParameter("userCount", userCount)
-        val result = jpaQuery.resultList as MutableList<*>
+        val result = jpaQuery.resultList.getOrNull(0) as ChatRoom?
         return result
     }
 }
