@@ -3,19 +3,24 @@ package com.alpha.kooing.user.service
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.dto.GoogleUserDto
+import com.alpha.kooing.user.event.*
 import com.alpha.kooing.user.repository.UserRepository
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.Cookie
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.ResponseCookie
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 import java.util.*
 
 @Service
 class LoginService(
     private val userRepository: UserRepository,
-    private val jwtTokenProvider: JwtTokenProvider
+    private val jwtTokenProvider: JwtTokenProvider,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ){
 
     fun createCookieWithToken(token:String): ResponseCookie {
@@ -47,6 +52,7 @@ class LoginService(
         }
     }
 
+    @Transactional
     fun getLoginToken(token:String):MutableMap<String, String>?{
         val userInfo = resolveTokenToObject(token)?:return null
         val existsUser = userRepository.findByEmail(userInfo.email).orElse(null)
@@ -69,6 +75,18 @@ class LoginService(
                 expiration = jwtTokenProvider.expiration
             )
             res["role"] = Role.LIMITED.name
+        }
+        //출석체크
+        if (existsUser?.lastLoginDatetime?.toLocalDate() != LocalDate.now()) {
+            existsUser.attend()
+            userRepository.save(existsUser)
+            when (existsUser.attendanceCount) {
+                3 -> applicationEventPublisher.publishEvent(Attend3DaysEvent(existsUser))
+                5 -> applicationEventPublisher.publishEvent(Attend5DaysEvent(existsUser))
+                7 -> applicationEventPublisher.publishEvent(Attend7DaysEvent(existsUser))
+                14 -> applicationEventPublisher.publishEvent(Attend2WeeksEvent(existsUser))
+                30 -> applicationEventPublisher.publishEvent(Attend1MonthEvent(existsUser))
+            }
         }
         return res
     }

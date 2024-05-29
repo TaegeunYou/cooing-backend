@@ -7,12 +7,8 @@ import com.alpha.kooing.config.jwt.JwtTokenProvider
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 class CollegeController(
@@ -89,10 +85,11 @@ class CollegeController(
     @Operation(summary = "동아리 및 소모임 추가")
     fun createClub(
         httpServletRequest: HttpServletRequest,
-        @RequestBody request: CreateClubRequest
+        @RequestPart request: CreateClubRequest,
+        @RequestPart("image") image: MultipartFile?
     ): ResponseEntity<ApiResponse<Unit>> {
         val token = jwtTokenProvider.resolveToken(httpServletRequest)
-        collegeService.createClub(token, request)
+        collegeService.createClub(token, request, image)
         return ResponseEntity.ok().build()
     }
 

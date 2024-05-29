@@ -1,5 +1,6 @@
 package com.alpha.kooing.support.entity
 
+import com.alpha.kooing.board.entity.Board
 import jakarta.persistence.*
 
 @Entity
@@ -62,5 +63,5 @@ class JobPosting(
     @Column(columnDefinition = "text")
     val ongoingYn: String? = null,
     @Column(columnDefinition = "text")
-    val decimalDay: String? = null
+    val decimalDay: String? = null,
 )

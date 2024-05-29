@@ -1,28 +1,29 @@
 package com.alpha.kooing.support.service
 
+import com.alpha.kooing.board.event.PostStudyVolunteerClub1Event
+import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.support.dto.*
-import com.alpha.kooing.support.entity.JobPosting
-import com.alpha.kooing.support.entity.SupportBusiness
-import com.alpha.kooing.support.entity.SupportPolicy
+import com.alpha.kooing.support.entity.*
 import com.alpha.kooing.support.enum.SupportBusinessCategoryType
 import com.alpha.kooing.support.enum.SupportLocationType
 import com.alpha.kooing.support.enum.SupportPolicyType
-import com.alpha.kooing.support.repository.JobPostingRepository
-import com.alpha.kooing.support.repository.SupportBusinessRepository
-import com.alpha.kooing.support.repository.SupportPolicyRepository
+import com.alpha.kooing.support.event.Scrap3JobPostingEvent
+import com.alpha.kooing.support.event.Scrap3SupportBusinessEvent
+import com.alpha.kooing.support.event.Scrap3SupportPolicyEvent
+import com.alpha.kooing.support.repository.*
+import com.alpha.kooing.user.repository.UserRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.persistence.EntityManager
 import org.jsoup.Connection
 import org.jsoup.Jsoup
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.LinkedMultiValueMap
-import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
-import javax.imageio.ImageIO
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -31,39 +32,55 @@ class SupportService(
     private val supportPolicyRepository: SupportPolicyRepository,
     private val supportBusinessRepository: SupportBusinessRepository,
     private val jobPostingRepository: JobPostingRepository,
+    private val userRepository: UserRepository,
     private val entityManager: EntityManager,
     private val restTemplate: RestTemplate,
+    private val jwtTokenProvider: JwtTokenProvider,
+    private val jobPostingScrapRepository: JobPostingScrapRepository,
+    private val supportBusinessScrapRepository: SupportBusinessScrapRepository,
+    private val supportPolicyScrapRepository: SupportPolicyScrapRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
     @Transactional(readOnly = true)
     fun getSupportPolicies(
+        token: String,
         supportLocationType: SupportLocationType?,
         policyType: String?,
-        query: String?
+        query: String?,
+        scrap: Boolean?,
     ): List<SupportPolicySummary> {
-        val jpql = "select sp from SupportPolicy sp"
-        var whereSql = " where true"
-        val paramMap = mutableMapOf<String, String>()
-        if (supportLocationType != null) {
-            whereSql += " and sp.polyBizSecd = :locationType"
-            paramMap["locationType"] = supportLocationType.name
+        val supportPolicyList = if (scrap == true) {
+            val userEmail = jwtTokenProvider.getJwtEmail(token)
+            val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
+            user.supportPolicyScraps.map {
+                it.supportPolicy
+            }
+        } else {
+            val jpql = "select sp from SupportPolicy sp"
+            var whereSql = " where true"
+            val paramMap = mutableMapOf<String, String>()
+            if (supportLocationType != null) {
+                whereSql += " and sp.polyBizSecd = :locationType"
+                paramMap["locationType"] = supportLocationType.name
+            }
+            if (policyType != null) {
+                whereSql += " and sp.polyRlmCd = :supportPolicyType"
+                paramMap["supportPolicyType"] = SupportPolicyType.entries.first {
+                    it.value == policyType
+                }.value
+            }
+            if (query != null) {
+                whereSql += " and (sp.polyBizSjnm like CONCAT('%',:keyword,'%') or sp.polyItcnCn like CONCAT('%',:keyword,'%'))"
+                paramMap["keyword"] = query
+            }
+            val sql = entityManager.createQuery(jpql + whereSql, SupportPolicy::class.java)
+            paramMap.forEach {
+                sql.setParameter(it.key, it.value)
+            }
+            sql.resultList
         }
-        if (policyType != null) {
-            whereSql += " and sp.polyRlmCd = :supportPolicyType"
-            paramMap["supportPolicyType"] = SupportPolicyType.entries.first {
-                it.value == policyType
-            }.value
-        }
-        if (query != null) {
-            whereSql += " and (sp.polyBizSjnm like CONCAT('%',:keyword,'%') or sp.polyItcnCn like CONCAT('%',:keyword,'%'))"
-            paramMap["keyword"] = query
-        }
-        val sql = entityManager.createQuery(jpql + whereSql, SupportPolicy::class.java)
-        paramMap.forEach {
-            sql.setParameter(it.key, it.value)
-        }
-        val resultList = sql.resultList
-        return resultList.map {
+        return supportPolicyList.map {
             SupportPolicySummary(
                 it.id!!,
                 it.polyBizSjnm,
@@ -81,31 +98,41 @@ class SupportService(
 
     @Transactional(readOnly = true)
     fun getSupportBusiness(
+        token: String,
         supportBusinessCategoryType: SupportBusinessCategoryType?,
         registerYear: String?,
-        query: String?
+        query: String?,
+        scrap: Boolean?,
     ): List<SupportBusinessSummary> {
-        val jpql = "select sb from SupportBusiness sb"
-        var whereSql = " where true"
-        val paramMap = mutableMapOf<String, String>()
-        if (supportBusinessCategoryType != null && supportBusinessCategoryType != SupportBusinessCategoryType.전체) {
-            whereSql += " and sb.category = :category"
-            paramMap["category"] = supportBusinessCategoryType.name
+        val supportBusinessList = if (scrap == true) {
+            val userEmail = jwtTokenProvider.getJwtEmail(token)
+            val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
+            user.supportBusinessScraps.map {
+                it.supportBusiness
+            }
+        } else {
+            val jpql = "select sb from SupportBusiness sb"
+            var whereSql = " where true"
+            val paramMap = mutableMapOf<String, String>()
+            if (supportBusinessCategoryType != null && supportBusinessCategoryType != SupportBusinessCategoryType.전체) {
+                whereSql += " and sb.category = :category"
+                paramMap["category"] = supportBusinessCategoryType.name
+            }
+            if (registerYear != null) {
+                whereSql += " and sb.registerYear = :registerYear"
+                paramMap["registerYear"] = registerYear
+            }
+            if (query != null) {
+                whereSql += " and (sb.title like CONCAT('%',:keyword,'%') or sb.content like CONCAT('%',:keyword,'%'))"
+                paramMap["keyword"] = query
+            }
+            val sql = entityManager.createQuery(jpql + whereSql, SupportBusiness::class.java)
+            paramMap.forEach {
+                sql.setParameter(it.key, it.value)
+            }
+            sql.resultList
         }
-        if (registerYear != null) {
-            whereSql += " and sb.registerYear = :registerYear"
-            paramMap["registerYear"] = registerYear
-        }
-        if (query != null) {
-            whereSql += " and (sb.title like CONCAT('%',:keyword,'%') or sb.content like CONCAT('%',:keyword,'%'))"
-            paramMap["keyword"] = query
-        }
-        val sql = entityManager.createQuery(jpql + whereSql, SupportBusiness::class.java)
-        paramMap.forEach {
-            sql.setParameter(it.key, it.value)
-        }
-        val resultList = sql.resultList
-        return resultList.map {
+        return supportBusinessList.map {
             SupportBusinessSummary(
                 it.id!!,
                 it.title,
@@ -164,40 +191,51 @@ class SupportService(
 
     @Transactional(readOnly = true)
     fun getJobPostings(
+        token: String,
         supportLocationType: SupportLocationType?,
         jobType: String?,
-        query: String?
+        query: String?,
+        scrap: Boolean?,
     ): List<JobPostingSummary> {
-        val jpql = "select jp from JobPosting jp"
-        var whereSql = " where true"
-        val paramMap = mutableMapOf<String, String>()
-        if (supportLocationType != null) {
-            whereSql += " and jp.workRgnNmLst like CONCAT('%',:locationType,'%')"
-            paramMap["locationType"] = supportLocationType.name
+        val jobPostingList = if (scrap == true) {
+            val userEmail = jwtTokenProvider.getJwtEmail(token)
+            val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
+            user.jobPostingScraps.map {
+                it.jobPosting
+            }
+        } else {
+            val jpql = "select jp from JobPosting jp"
+            var whereSql = " where true"
+            val paramMap = mutableMapOf<String, String>()
+            if (supportLocationType != null) {
+                whereSql += " and jp.workRgnNmLst like CONCAT('%',:locationType,'%')"
+                paramMap["locationType"] = supportLocationType.name
+            }
+            if (jobType != null) {
+                whereSql += " and jp.ncsCdNmLst = :jobType"
+                paramMap["jobType"] = jobType
+            }
+            if (query != null) {
+                whereSql += " and jp.recrutPbancTtl like CONCAT('%',:keyword,'%')"
+                paramMap["keyword"] = query
+            }
+            val sql = entityManager.createQuery(jpql + whereSql, JobPosting::class.java)
+            paramMap.forEach {
+                sql.setParameter(it.key, it.value)
+            }
+            sql.resultList
         }
-        if (jobType != null) {
-            whereSql += " and jp.ncsCdNmLst = :jobType"
-            paramMap["jobType"] = jobType
-        }
-        if (query != null) {
-            whereSql += " and jp.recrutPbancTtl like CONCAT('%',:keyword,'%')"
-            paramMap["keyword"] = query
-        }
-        val sql = entityManager.createQuery(jpql + whereSql, JobPosting::class.java)
-        paramMap.forEach {
-            sql.setParameter(it.key, it.value)
-        }
-        val resultList = sql.resultList
-        return resultList.map {
+        return jobPostingList.map {
             JobPostingSummary(
                 it.id!!,
                 it.recrutPbancTtl,
                 it.instNm,
-                it.pbancEndYmd?.let {
-                    "~${it.substring(4..5)}.${it.substring(6..7)}"
-                },
+//                it.pbancEndYmd?.let {
+//                    "~${it.substring(4..5)}.${it.substring(6..7)}"
+//                },
                 it.workRgnNmLst,
                 it.acbgCondNmLst,
+                it.recrutSeNm
             )
         }
     }
@@ -237,5 +275,50 @@ class SupportService(
             jobPosting.workRgnLst,
             jobPosting.workRgnNmLst,
         )
+    }
+
+    @Transactional
+    fun scrapSupportPolicy(token: String, supportPolicyId: Long) {
+        val userEmail = jwtTokenProvider.getJwtEmail(token)
+        val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
+        val supportPolicy = supportPolicyRepository.findById(supportPolicyId).getOrNull() ?: throw Exception("지원 정책 정보가 올바르지 않습니다.")
+        supportPolicyScrapRepository.save(
+            SupportPolicyScrap(
+                null, user, supportPolicy
+            )
+        )
+        if (user.supportPolicyScraps.size == 3) {
+            applicationEventPublisher.publishEvent(Scrap3SupportPolicyEvent(user))
+        }
+    }
+
+    @Transactional
+    fun scrapSupportBusiness(token: String, supportBusinessId: Long) {
+        val userEmail = jwtTokenProvider.getJwtEmail(token)
+        val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
+        val supportBusiness = supportBusinessRepository.findById(supportBusinessId).getOrNull() ?: throw Exception("지원 사업 정보가 올바르지 않습니다.")
+        supportBusinessScrapRepository.save(
+            SupportBusinessScrap(
+                null, user, supportBusiness
+            )
+        )
+        if (user.supportBusinessScraps.size == 3) {
+            applicationEventPublisher.publishEvent(Scrap3SupportBusinessEvent(user))
+        }
+    }
+
+    @Transactional
+    fun scrapJobPosting(token: String, jobPostingId: Long) {
+        val userEmail = jwtTokenProvider.getJwtEmail(token)
+        val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
+        val jobPosting = jobPostingRepository.findById(jobPostingId).getOrNull() ?: throw Exception("채용 공고 정보가 올바르지 않습니다.")
+        jobPostingScrapRepository.save(
+            JobPostingScrap(
+                null, user, jobPosting
+            )
+        )
+        if (user.jobPostingScraps.size == 3) {
+            applicationEventPublisher.publishEvent(Scrap3JobPostingEvent(user))
+        }
     }
 }

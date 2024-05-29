@@ -3,6 +3,7 @@ package com.alpha.kooing.user.service
 import com.alpha.kooing.config.LoginUserManager
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.external.AmazonS3Service
+import com.alpha.kooing.reward.enum.RewardType
 import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.dto.*
 import com.alpha.kooing.user.User
@@ -10,7 +11,14 @@ import com.alpha.kooing.user.entity.ConcernKeyword
 import com.alpha.kooing.user.entity.UserConcernKeyword
 import com.alpha.kooing.user.entity.UserInterestKeyword
 import com.alpha.kooing.user.enum.RoleType
+import com.alpha.kooing.user.event.SignUpEvent
+import com.alpha.kooing.user.event.notification.ChangeUserKeywordEvent
 import com.alpha.kooing.user.repository.*
+import com.alpha.kooing.userMatching.repository.UserMatchingRepository
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -25,13 +33,20 @@ class UserService(
     private val userConcernKeywordRepository: UserConcernKeywordRepository,
     private val interestKeywordRepository: InterestKeywordRepository,
     private val concernKeywordRepository: ConcernKeywordRepository,
-    private val userManager: LoginUserManager
+    private val userMatchingRepository: UserMatchingRepository,
+    private val userManager: LoginUserManager,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
 
     @Transactional(readOnly = true)
     fun getUser(token: String): UserDetail {
         val userEmail = jwtTokenProvider.getJwtEmail(token)
         val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
+        val userRewards = user.userRewards.groupBy {
+            it.reward.rewardType
+        }.map {
+            Pair(it.key, it.value.size)
+        }
         return UserDetail(
             user.username,
             user.roleType,
@@ -42,7 +57,16 @@ class UserService(
             },
             user.userConcernKeyword.map {
                 it.concernKeyword.name
-            }
+            },
+            RewardType.entries.map { rewardType ->
+                UserDetail.RewardDetail(
+                    rewardType.name,
+                    userRewards.firstOrNull {
+                        it.first == rewardType
+                    }?.second ?: 0
+                )
+            },
+            user.isMatchingActive
         )
     }
 
@@ -58,7 +82,7 @@ class UserService(
                 isMatchingActive = false,
                 profileImageUrl = userInfo.profileImageUrl,
                 profileMessage = userInfo.profileMessage,
-                roleType = RoleType.valueOf(userInfo.role)
+                roleType = RoleType.valueOf(userInfo.role),
             )
         )
         println(concernKeywordRepository.findAllByName(userInfo.concernKeyword[0]).getOrNull()?:"no such keyword")
@@ -70,6 +94,7 @@ class UserService(
             val interestKeyword = interestKeywordRepository.findAllByName(it).getOrNull()?:return null
             userInterestKeywordRepository.save(UserInterestKeyword(user=user, interestKeyword = interestKeyword))
         }
+        applicationEventPublisher.publishEvent(SignUpEvent(user))
         return user
     }
 
@@ -116,6 +141,7 @@ class UserService(
                     UserConcernKeyword(null, user, updateConcernKeyword)
                 }
         )
+        this.updateUserMatchingKeywordEvent(user)
     }
 
     @Transactional
@@ -193,5 +219,9 @@ class UserService(
             }
         }.filterNotNull()
         return matchUser
+    }
+
+    private fun updateUserMatchingKeywordEvent(user: User) {
+//        applicationEventPublisher.publishEvent(ChangeUserKeywordEvent(user, user.ma))
     }
 }

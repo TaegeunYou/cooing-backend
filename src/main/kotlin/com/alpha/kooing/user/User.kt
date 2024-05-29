@@ -1,13 +1,20 @@
 package com.alpha.kooing.user
 
 import com.alpha.kooing.board.entity.*
+import com.alpha.kooing.chat.entity.Chat
 import com.alpha.kooing.chatMatching.entity.ChatMatching
+import com.alpha.kooing.notification.entity.Notification
+import com.alpha.kooing.reward.entity.UserReward
+import com.alpha.kooing.support.entity.JobPostingScrap
+import com.alpha.kooing.support.entity.SupportBusinessScrap
+import com.alpha.kooing.support.entity.SupportPolicyScrap
 import com.alpha.kooing.user.dto.UserDetail
 import com.alpha.kooing.user.dto.UserResponseDto
 import com.alpha.kooing.user.entity.UserConcernKeyword
 import com.alpha.kooing.user.entity.UserInterestKeyword
 import com.alpha.kooing.user.enum.RoleType
 import jakarta.persistence.*
+import java.time.LocalDateTime
 
 @Entity
 class User(
@@ -25,6 +32,9 @@ class User(
     var chatMatching: List<ChatMatching> = listOf(),
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    var chats: MutableList<Chat> = mutableListOf(),
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     val boards: MutableList<Board> = mutableListOf(),
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
@@ -34,16 +44,37 @@ class User(
     val scraps: MutableList<Scrap> = mutableListOf(),
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    val likes: MutableList<Likes> = mutableListOf(),
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     val clubs: MutableList<Club> = mutableListOf(),
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     val studies: MutableList<Study> = mutableListOf(),
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    val volunteers: MutableList<Volunteer> = mutableListOf(),
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     val userInterestKeyword: MutableList<UserInterestKeyword> = mutableListOf(),
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     val userConcernKeyword: MutableList<UserConcernKeyword> = mutableListOf(),
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    val notifications: MutableList<Notification> = mutableListOf(),
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    val userRewards: MutableList<UserReward> = mutableListOf(),
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    val supportPolicyScraps: MutableList<SupportPolicyScrap> = mutableListOf(),
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    val supportBusinessScraps: MutableList<SupportBusinessScrap> = mutableListOf(),
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    val jobPostingScraps: MutableList<JobPostingScrap> = mutableListOf(),
 
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false)
@@ -57,6 +88,15 @@ class User(
 
     @Column(nullable = false)
     var isMatchingActive: Boolean,
+
+    @Column(nullable = false)
+    var attendanceCount: Int = 0,
+
+    @Column(nullable = false)
+    var lastLoginDatetime: LocalDateTime = LocalDateTime.now(),
+
+    @Column(nullable = false)
+    var house: String = "",
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -82,7 +122,16 @@ class User(
             profileMessage = this.profileMessage,
             profileImageUrl = this.profileImageUrl,
             interestKeyword = this.userInterestKeyword.map { it.interestKeyword.name },
-            concernKeyword = this.userConcernKeyword.map { it.concernKeyword.name }
+            concernKeyword = this.userConcernKeyword.map { it.concernKeyword.name },
+            rewards = this.userRewards.groupBy {
+                it.reward.rewardType
+            }.map {
+                UserDetail.RewardDetail(
+                    it.key.name,
+                    it.value.size
+                )
+            },
+            this.isMatchingActive
         )
     }
 
@@ -101,6 +150,14 @@ class User(
 
     override fun toString(): String {
         return "User(email='$email', username='$username', role=$role)"
+    }
+
+    fun attend() {
+        this.attendanceCount++
+    }
+
+    fun updateHouse(houseStringFormat: String) {
+        this.house = houseStringFormat
     }
 
 }
