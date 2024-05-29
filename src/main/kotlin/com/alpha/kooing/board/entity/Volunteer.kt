@@ -2,6 +2,7 @@ package com.alpha.kooing.board.entity
 
 import com.alpha.kooing.user.User
 import jakarta.persistence.*
+import org.hibernate.annotations.ColumnDefault
 import org.springframework.data.annotation.CreatedDate
 import java.time.LocalDate
 import java.time.LocalDateTime
