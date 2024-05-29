@@ -71,7 +71,7 @@ class NotificationEventListener(
     fun provideRewardEventHandler(event: ProvideRewardEvent) {
         notificationService.createRewardNotification(
             event.user,
-            NotificationTitleType.MATE,
+            NotificationTitleType.REWARD,
             event.rewardRequirementType
         )
     }
