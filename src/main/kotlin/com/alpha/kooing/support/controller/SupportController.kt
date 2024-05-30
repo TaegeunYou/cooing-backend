@@ -11,7 +11,10 @@ import com.alpha.kooing.support.service.SupportPolicySchedulingService
 import com.alpha.kooing.support.service.SupportService
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -87,10 +90,18 @@ class SupportController(
     }
 
     @GetMapping("/support/business/{id}/file")
+    @Operation(summary = "지원 사업 첨부파일 다운로드")
     fun getSupportBusinessDetailFile(
         @PathVariable("id") supportBusinessId: Long,
-    ): ResponseEntity<ApiResponse<SupportBusinessDetail>> {
-        TODO()
+        @RequestParam("fileName") fileName: String,
+        @RequestParam("downName") downName: String,
+    ): ResponseEntity<ByteArray> {
+        val file = supportService.getSupportBusinessDetailFile(supportBusinessId, fileName, downName)
+        return ResponseEntity.ok()
+            .header("Content-Type", file.contentType)
+            .body(
+                file.byteArray
+            )
     }
 
     @GetMapping("/support/job")

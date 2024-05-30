@@ -1,7 +1,7 @@
 package com.alpha.kooing.support.service
 
-import com.alpha.kooing.board.event.PostStudyVolunteerClub1Event
 import com.alpha.kooing.config.jwt.JwtTokenProvider
+import com.alpha.kooing.support.*
 import com.alpha.kooing.support.dto.*
 import com.alpha.kooing.support.entity.*
 import com.alpha.kooing.support.enum.SupportBusinessCategoryType
@@ -14,16 +14,20 @@ import com.alpha.kooing.support.repository.*
 import com.alpha.kooing.user.repository.UserRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.persistence.EntityManager
+import org.apache.commons.io.FileUtils
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
+import org.springframework.http.*
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.net.URLConnection
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -320,5 +324,33 @@ class SupportService(
         if (user.jobPostingScraps.size == 3) {
             applicationEventPublisher.publishEvent(Scrap3JobPostingEvent(user))
         }
+    }
+
+    fun getSupportBusinessDetailFile(supportBusinessId: Long, fileName: String, downName: String): SupportBusinessDetailFileDto {
+        val url = "https://jaripon.ncrc.or.kr/fileDownload.do"
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+        val map: MultiValueMap<String, String> = LinkedMultiValueMap()
+        map.add("filename", fileName)
+        map.add("downname", downName)
+        map.add("uniqueKey", "")
+        val response = restTemplate.postForEntity(url, HttpEntity(map, headers), ByteArray::class.java)
+        return SupportBusinessDetailFileDto(
+            response.body!!, URLConnection.guessContentTypeFromName(fileName)
+        )
+    }
+
+    fun byteArrayToFile(byteArray: ByteArray, filePath: String): File {
+        val file = File(filePath)
+        var fos: FileOutputStream? = null
+        try {
+            fos = FileOutputStream(file)
+            fos.write(byteArray)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            fos?.close()
+        }
+        return file
     }
 }
