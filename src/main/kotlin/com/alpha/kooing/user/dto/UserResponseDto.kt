@@ -11,8 +11,9 @@ class UserResponseDto(
     val role: Role,
     val profileMessage: String,
     val profileImageUrl:String?,
-    val userInterestKeyword: List<String>,
-    val userConcernKeyword: List<String>
+    val userInterestKeyword: List<Int>,
+    val userConcernKeyword: List<Int>,
+    val isMatchingActive: Boolean,
 ){
     override fun toString(): String {
         return "UserResponseDto(username='$username', email='$email', role=$role)"
