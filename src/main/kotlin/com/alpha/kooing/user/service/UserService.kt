@@ -14,6 +14,7 @@ import com.alpha.kooing.user.enum.RoleType
 import com.alpha.kooing.user.event.SignUpEvent
 import com.alpha.kooing.user.repository.*
 import com.alpha.kooing.userMatching.repository.UserMatchingRepository
+import com.alpha.kooing.util.ImageUtil
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -33,6 +34,7 @@ class UserService(
     private val userManager: LoginUserManager,
     private val applicationEventPublisher: ApplicationEventPublisher,
     private val matchUserRepository: MatchUserRepository,
+    private val awsS3Service: AmazonS3Service,
 
 ) {
 
@@ -73,18 +75,19 @@ class UserService(
     }
 
     @Transactional
-    fun saveUser(token:String, userInfo:UserCreateDto):User?{
+    fun saveUser(token:String, userInfo:UserCreateDto, profileImage: MultipartFile?):User?{
         val existUser = userRepository.findByEmail(jwtTokenProvider.getJwtEmail(token)).orElse(null)
         if(existUser!=null) return null
+        val imageUrl = if(profileImage!=null) awsS3Service.upload(profileImage, "profile") else null
         val user = userRepository.save(
             User(
                 email = jwtTokenProvider.getJwtEmail(token),
-                username = userInfo.name,
+                username = jwtTokenProvider.getJwtUsername(token),
                 role = Role.USER,
                 isMatchingActive = false,
-                profileImageUrl = userInfo.profileImageUrl,
+                profileImageUrl = imageUrl,
                 profileMessage = userInfo.profileMessage,
-                roleType = RoleType.valueOf(userInfo.role),
+                roleType = userInfo.role,
             )
         )
         println(concernKeywordRepository.findAllByName(userInfo.concernKeyword[0]).getOrNull()?:"no such keyword")

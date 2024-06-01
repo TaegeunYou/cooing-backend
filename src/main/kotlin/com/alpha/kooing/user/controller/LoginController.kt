@@ -27,9 +27,12 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 import java.util.Base64
 import java.util.Objects
+import javax.print.attribute.standard.Media
 import kotlin.math.exp
 import kotlin.math.log
 
@@ -75,11 +78,11 @@ class LoginController(
     }
 
 
-    @PostMapping("/signup", consumes = {MediaType.APPLICATION_JSON_VALUE , MediaType.MULTIPART_FORM_DATA_VALUE})
-    fun signup(request: HttpServletRequest, response: HttpServletResponse, @RequestBody userInfo:UserCreateDto) : ApiResponse<*>{
+    @PostMapping("/signup", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
+    fun signup(request: HttpServletRequest, response: HttpServletResponse, @RequestPart userInfo:UserCreateDto, @RequestPart("profileImage", required = false) profileImage: MultipartFile?) : ApiResponse<*>{
         try {
             val token = jwtTokenProvider.resolveToken(request)
-            val user = userService.saveUser(token, userInfo)?:return ApiResponse("save user fail", null)
+            val user = userService.saveUser(token, userInfo, profileImage)?:return ApiResponse("save user fail", null)
             val newToken = jwtTokenProvider.createJwt(
                 id = user.id,
                 email = user.email,
