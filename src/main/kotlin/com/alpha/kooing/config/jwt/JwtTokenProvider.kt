@@ -59,16 +59,9 @@ class JwtTokenProvider(
     }
 
     fun resolveToken(request: HttpServletRequest): String {
-        var token = request.getHeader("Authorization")?:createJwt(-1, "kym8821", Role.USER.name, "kym8821", expiration)
+        var token = request.getHeader("Authorization")?:throw Exception()
         if(token.startsWith(bearerPrefix)){token = token.substring(bearerPrefix.length)}
         return token
-//        return request.cookies.firstOrNull {
-//            it.name == "Authorization"
-//        }?.value ?: throw Exception()
-    }
-
-    fun resolveTokenHeader(request: HttpServletRequest): String? {
-        return request.getHeader("Authorization")?: return null
     }
 
     fun createRandomToken():String{

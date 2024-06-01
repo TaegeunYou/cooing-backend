@@ -34,15 +34,17 @@ class JwtAuthenticationFilter(
 //        val cookies = request.cookies
 //        if(cookies != null) authorization = cookies.firstOrNull { it.name == "Authorization" }?.value
 
-        val authorization = jwtTokenProvider.resolveToken(request)
-        println(jwtTokenProvider.getJwtEmail(authorization))
-
-        if(authorization == null || jwtTokenProvider.isExpired(authorization)){
+        var authorization:String? = null
+        try {
+            authorization = jwtTokenProvider.resolveToken(request)
+            if(jwtTokenProvider.isExpired(authorization)) throw  Exception()
+        }catch (e:Exception){
             SecurityContextHolder.getContext().authentication = null
             println("유효하지 않은 토큰")
             filterChain.doFilter(request, response)
             return
         }
+
         println("user role : ${Role.valueOf(jwtTokenProvider.getJwtRole(authorization))}")
         val customOAuth2User = CustomOAuth2User(
             email = jwtTokenProvider.getJwtEmail(authorization),
