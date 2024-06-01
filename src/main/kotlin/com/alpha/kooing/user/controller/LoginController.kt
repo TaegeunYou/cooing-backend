@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.boot.json.JsonParser
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -74,11 +75,10 @@ class LoginController(
     }
 
 
-    @PostMapping("/signup")
+    @PostMapping("/signup", consumes = {MediaType.APPLICATION_JSON_VALUE , MediaType.MULTIPART_FORM_DATA_VALUE})
     fun signup(request: HttpServletRequest, response: HttpServletResponse, @RequestBody userInfo:UserCreateDto) : ApiResponse<*>{
         try {
-//            val token = jwtTokenProvider.resolveToken(request)
-            val token = jwtTokenProvider.createRandomToken()
+            val token = jwtTokenProvider.resolveToken(request)
             val user = userService.saveUser(token, userInfo)?:return ApiResponse("save user fail", null)
             val newToken = jwtTokenProvider.createJwt(
                 id = user.id,
