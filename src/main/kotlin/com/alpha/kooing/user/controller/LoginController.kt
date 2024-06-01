@@ -77,8 +77,7 @@ class LoginController(
     @PostMapping("/signup")
     fun signup(request: HttpServletRequest, response: HttpServletResponse, @RequestBody userInfo:UserCreateDto) : ApiResponse<*>{
         try {
-//            val token = jwtTokenProvider.resolveToken(request)
-            val token = jwtTokenProvider.createRandomToken()
+            val token = jwtTokenProvider.resolveToken(request)
             val user = userService.saveUser(token, userInfo)?:return ApiResponse("save user fail", null)
             val newToken = jwtTokenProvider.createJwt(
                 id = user.id,
