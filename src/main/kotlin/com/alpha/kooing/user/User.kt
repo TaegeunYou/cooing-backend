@@ -8,8 +8,9 @@ import com.alpha.kooing.reward.entity.UserReward
 import com.alpha.kooing.support.entity.JobPostingScrap
 import com.alpha.kooing.support.entity.SupportBusinessScrap
 import com.alpha.kooing.support.entity.SupportPolicyScrap
-import com.alpha.kooing.user.dto.UserDetail
 import com.alpha.kooing.user.dto.UserResponseDto
+import com.alpha.kooing.user.entity.ConcernKeyword
+import com.alpha.kooing.user.entity.InterestKeyword
 import com.alpha.kooing.user.entity.UserConcernKeyword
 import com.alpha.kooing.user.entity.UserInterestKeyword
 import com.alpha.kooing.user.enum.RoleType
@@ -102,7 +103,9 @@ class User(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id:Long? = null
 ){
-    fun toResponseDto():UserResponseDto{
+    fun toResponseDto(interestKeywordAll: MutableList<InterestKeyword>, concernKeywordAll: MutableList<ConcernKeyword>):UserResponseDto{
+        val userInterestKeyword = this.userInterestKeyword.map { it.interestKeyword }
+        val userConcernKeyword = this.userConcernKeyword.map { it.concernKeyword }
         return UserResponseDto(
             id=this.id,
             email = this.email,
@@ -110,30 +113,35 @@ class User(
             role = this.role,
             profileMessage = this.profileMessage,
             profileImageUrl = this.profileImageUrl,
-            userConcernKeyword = this.userConcernKeyword.map { it.concernKeyword.name },
-            userInterestKeyword = this.userInterestKeyword.map { it.interestKeyword.name }
+            userInterestKeyword = interestKeywordAll.map {
+                if (it in userInterestKeyword) 1 else 0
+            },
+            userConcernKeyword = concernKeywordAll.map {
+                if (it in userConcernKeyword) 1 else 0
+            },
+            isMatchingActive = this.isMatchingActive
         )
     }
 
-    fun toUserDetail():UserDetail{
-        return UserDetail(
-            name = this.username,
-            role = this.roleType,
-            profileMessage = this.profileMessage,
-            profileImageUrl = this.profileImageUrl,
-            interestKeyword = this.userInterestKeyword.map { it.interestKeyword.name },
-            concernKeyword = this.userConcernKeyword.map { it.concernKeyword.name },
-            rewards = this.userRewards.groupBy {
-                it.reward.rewardType
-            }.map {
-                UserDetail.RewardDetail(
-                    it.key.name,
-                    it.value.size
-                )
-            },
-            this.isMatchingActive
-        )
-    }
+//    fun toUserDetail():UserDetail{
+//        return UserDetail(
+//            name = this.username,
+//            role = this.roleType,
+//            profileMessage = this.profileMessage,
+//            profileImageUrl = this.profileImageUrl,
+//            interestKeyword = this.userInterestKeyword.map { it.interestKeyword.name },
+//            concernKeyword = this.userConcernKeyword.map { it.concernKeyword.name },
+//            rewards = this.userRewards.groupBy {
+//                it.reward.rewardType
+//            }.map {
+//                UserDetail.RewardDetail(
+//                    it.key.name,
+//                    it.value.size
+//                )
+//            },
+//            this.isMatchingActive
+//        )
+//    }
 
     fun updateProfile(name: String, profileMessage: String) {
         this.username = name

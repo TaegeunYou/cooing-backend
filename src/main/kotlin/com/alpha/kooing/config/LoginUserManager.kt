@@ -1,15 +1,18 @@
 package com.alpha.kooing.config
 
 import com.alpha.kooing.config.jwt.JwtTokenProvider
-import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.dto.UserResponseDto
+import com.alpha.kooing.user.repository.ConcernKeywordRepository
+import com.alpha.kooing.user.repository.InterestKeywordRepository
 import com.alpha.kooing.user.repository.UserRepository
 import org.springframework.stereotype.Component
 
 @Component
 class LoginUserManager(
     val jwtTokenProvider: JwtTokenProvider,
-    val userRepository: UserRepository
+    val userRepository: UserRepository,
+    val interestKeywordRepository: InterestKeywordRepository,
+    val concernKeywordRepository: ConcernKeywordRepository
 ){
     companion object {
         private val users = mutableMapOf<Long, String>()
@@ -38,13 +41,18 @@ class LoginUserManager(
     }
 
     fun getLoginUserList(): List<UserResponseDto> {
+        val interestKeywordAll = interestKeywordRepository.findAll()
+        val concernKeywordAll = concernKeywordRepository.findAll()
         val userList = users.map { user ->
             val token = user.value
             if(jwtTokenProvider.isExpired(token)){
                 users.remove(user.key)
                 null
             }else{
-                userRepository.findByEmail(jwtTokenProvider.getJwtEmail(token)).orElse(null).toResponseDto()
+                userRepository.findByEmail(jwtTokenProvider.getJwtEmail(token)).orElse(null).toResponseDto(
+                    interestKeywordAll,
+                    concernKeywordAll
+                )
             }
         }.filterNotNull()
         return userList

@@ -7,18 +7,13 @@ import com.alpha.kooing.reward.enum.RewardType
 import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.dto.*
 import com.alpha.kooing.user.User
-import com.alpha.kooing.user.entity.ConcernKeyword
 import com.alpha.kooing.user.entity.MatchUser
 import com.alpha.kooing.user.entity.UserConcernKeyword
 import com.alpha.kooing.user.entity.UserInterestKeyword
 import com.alpha.kooing.user.enum.RoleType
 import com.alpha.kooing.user.event.SignUpEvent
-import com.alpha.kooing.user.event.notification.ChangeUserKeywordEvent
 import com.alpha.kooing.user.repository.*
 import com.alpha.kooing.userMatching.repository.UserMatchingRepository
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -37,7 +32,8 @@ class UserService(
     private val userMatchingRepository: UserMatchingRepository,
     private val userManager: LoginUserManager,
     private val applicationEventPublisher: ApplicationEventPublisher,
-    private val matchUserRepository: MatchUserRepository
+    private val matchUserRepository: MatchUserRepository,
+
 ) {
 
     @Transactional(readOnly = true)
@@ -49,16 +45,20 @@ class UserService(
         }.map {
             Pair(it.key, it.value.size)
         }
+        val userInterestKeyword = user.userInterestKeyword.map { it.interestKeyword }
+        val userConcernKeyword = user.userConcernKeyword.map { it.concernKeyword }
+        val interestKeywordAll = interestKeywordRepository.findAll()
+        val concernKeywordAll = concernKeywordRepository.findAll()
         return UserDetail(
             user.username,
             user.roleType,
             user.profileMessage,
             user.profileImageUrl,
-            user.userInterestKeyword.map {
-                it.interestKeyword.name
+            interestKeywordAll.map { interestKeyword ->
+                if (interestKeyword in userInterestKeyword) 1 else 0
             },
-            user.userConcernKeyword.map {
-                it.concernKeyword.name
+            concernKeywordAll.map { concernKeyword ->
+                if (concernKeyword in userConcernKeyword) 1 else 0
             },
             RewardType.entries.map { rewardType ->
                 UserDetail.RewardDetail(
@@ -134,14 +134,25 @@ class UserService(
         userConcernKeywordRepository.deleteAllById(user.userConcernKeyword.map { it.id })
         userInterestKeywordRepository.saveAll(
             interestKeywords
-                .filter { it.name in request.interestKeyword }
+                .filterIndexed { idx ,it ->
+                    request.interestKeyword[idx] == 1
+                }
                 .map { updateInterestKeyword ->
                     UserInterestKeyword(null, user, updateInterestKeyword)
                 }
         )
+        concernKeywords
+            .filterIndexed { idx ,it ->
+                request.concernKeyword[idx] == 1
+            }
+            .map { updateConcernKeyword ->
+                UserConcernKeyword(null, user, updateConcernKeyword)
+            }
         userConcernKeywordRepository.saveAll(
             concernKeywords
-                .filter { it.name in request.concernKeyword }
+                .filterIndexed { idx ,it ->
+                    request.concernKeyword[idx] == 1
+                }
                 .map { updateConcernKeyword ->
                     UserConcernKeyword(null, user, updateConcernKeyword)
                 }
@@ -152,7 +163,9 @@ class UserService(
     @Transactional
     fun findAll(): List<UserResponseDto>?{
         val result = userRepository.findAll()
-        return result.map { it.toResponseDto() }
+        val interestKeywordAll = interestKeywordRepository.findAll()
+        val concernKeywordAll = concernKeywordRepository.findAll()
+        return result.map { it.toResponseDto(interestKeywordAll, concernKeywordAll) }
     }
     /**
      * 1. income 소득 30-40
@@ -195,13 +208,15 @@ class UserService(
 
     @Transactional
     fun save(user: User): UserResponseDto? {
+        val interestKeywordAll = interestKeywordRepository.findAll()
+        val concernKeywordAll = concernKeywordRepository.findAll()
         try {
             if(userRepository.findByEmail(user.email).orElse(null)!=null){
                 return null
             }
             val result = userRepository.save(user)
             println("user : ${user.toString()}")
-            val resDto = result.toResponseDto()
+            val resDto = result.toResponseDto(interestKeywordAll, concernKeywordAll)
             println("resDto : ${resDto.toString()}")
             return resDto
         }catch (e: Exception){
@@ -230,14 +245,16 @@ class UserService(
     fun findOrCreateMatchUser(userId:Long):List<UserResponseDto>?{
         val currentUser = userRepository.findById(userId).orElse(null)?:return null
         var matchUsers = matchUserRepository.findAllByUserId(userId)
+        val interestKeywordAll = interestKeywordRepository.findAll()
+        val concernKeywordAll = concernKeywordRepository.findAll()
         if(matchUsers.isEmpty()){
             val ckw = currentUser.userConcernKeyword.map { it.concernKeyword.name }
             val ikw = currentUser.userInterestKeyword.map { it.interestKeyword.name }
                 val keywordMatchUsers = findMatchingUser(ikw, ckw, userId)
             keywordMatchUsers.forEach{ matchUserRepository.save(MatchUser(user = currentUser, matchUser = it)) }
-            return keywordMatchUsers.map { it.toResponseDto() }
+            return keywordMatchUsers.map { it.toResponseDto(interestKeywordAll, concernKeywordAll) }
         }
-        return matchUsers.map { it.user.toResponseDto() }
+        return matchUsers.map { it.user.toResponseDto(interestKeywordAll, concernKeywordAll) }
     }
 
     private fun updateUserMatchingKeywordEvent(user: User) {
