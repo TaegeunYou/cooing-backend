@@ -82,7 +82,7 @@ class UserService(
         val user = userRepository.save(
             User(
                 email = jwtTokenProvider.getJwtEmail(token),
-                username = jwtTokenProvider.getJwtUsername(token),
+                username = userInfo.username,
                 role = Role.USER,
                 isMatchingActive = false,
                 profileImageUrl = imageUrl,

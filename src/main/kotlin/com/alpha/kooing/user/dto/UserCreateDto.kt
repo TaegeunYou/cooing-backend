@@ -4,6 +4,7 @@ import com.alpha.kooing.user.enum.RoleType
 import org.springframework.web.multipart.MultipartFile
 
 class UserCreateDto(
+    val username: String,
     val role: RoleType,
     val profileMessage: String,
     val interestKeyword: List<String>,
