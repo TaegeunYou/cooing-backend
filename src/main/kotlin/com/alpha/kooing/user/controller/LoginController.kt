@@ -67,12 +67,11 @@ class LoginController(
     fun signIn(response: HttpServletResponse, @RequestBody loginDto:UserLoginDto): ApiResponse<*>{
         try {
             val token = loginDto.token
-            val tokenInfo = loginService.getLoginToken(token)?:throw Exception()
-            val userJwtToken = tokenInfo.getOrDefault("token", null)?:throw Exception()
-            val userRole = tokenInfo.getOrDefault("role", null)?:throw Exception()
+            val userJwtToken = loginService.getLoginToken(token)?:throw Exception()
             response.setHeader("Authorization", userJwtToken)
             return ApiResponse("generate token success", userJwtToken)
         }catch (e:Exception) {
+            println(e.printStackTrace())
             return ApiResponse("invalid token", null)
         }
     }

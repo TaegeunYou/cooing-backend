@@ -53,31 +53,33 @@ class LoginService(
     }
 
     @Transactional
-    fun getLoginToken(token:String):MutableMap<String, String>?{
+    fun getLoginToken(token:String):String?{
         val userInfo = resolveTokenToObject(token)?:return null
+        println("usernInfo : ${userInfo}")
         val existsUser = userRepository.findByEmail(userInfo.email).orElse(null)
-        val res = mutableMapOf<String,String>()
+        var token:String? = null
         if(existsUser != null) {
-            res["token"] = jwtTokenProvider.createJwt(
+            token = jwtTokenProvider.createJwt(
                 id = existsUser.id,
                 email = existsUser.email,
                 username = existsUser.username,
                 role = Role.USER.name,
                 expiration = jwtTokenProvider.expiration
             )
-            res["role"] = Role.USER.name
+            println("token : ${token}")
         }else{
-            res["token"] =  jwtTokenProvider.createJwt(
+            token =  jwtTokenProvider.createJwt(
                 id = -1,
                 email = userInfo.email,
                 username = userInfo.name,
                 role = Role.LIMITED.name,
                 expiration = jwtTokenProvider.expiration
             )
-            res["role"] = Role.LIMITED.name
+            println("token : ${token}")
         }
+
         //출석체크
-        if (existsUser?.lastLoginDatetime?.toLocalDate() != LocalDate.now()) {
+        if (existsUser!=null && existsUser.lastLoginDatetime.toLocalDate() != LocalDate.now()) {
             existsUser.attend()
             userRepository.save(existsUser)
             when (existsUser.attendanceCount) {
@@ -88,6 +90,6 @@ class LoginService(
                 30 -> applicationEventPublisher.publishEvent(Attend1MonthEvent(existsUser))
             }
         }
-        return res
+        return token
     }
 }
