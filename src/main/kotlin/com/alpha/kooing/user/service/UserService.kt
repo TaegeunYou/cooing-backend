@@ -325,4 +325,12 @@ class UserService(
             matchUser.isMatchingActive
         )
     }
+
+    @Transactional
+    fun getRecommendedFriends(userId: Long, count:Int): List<UserResponseDto> {
+        val users = userRepository.findRandomUsers(userId, count)
+        val interestKeywordAll = interestKeywordRepository.findAll()
+        val concernKeywordAll = concernKeywordRepository.findAll()
+        return users.map { it.toResponseDto(interestKeywordAll, concernKeywordAll) }
+    }
 }
