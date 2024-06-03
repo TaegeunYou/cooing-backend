@@ -37,39 +37,50 @@ class UserService(
 ) {
 
     @Transactional(readOnly = true)
-    fun getUser(token: String): UserDetail {
+    fun getUser(token: String): UserResponseDto {
         val userEmail = jwtTokenProvider.getJwtEmail(token)
         val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
-        val userRewards = user.userRewards.groupBy {
-            it.reward.rewardType
-        }.map {
-            Pair(it.key, it.value.size)
-        }
-        val userInterestKeyword = user.userInterestKeyword.map { it.interestKeyword }
-        val userConcernKeyword = user.userConcernKeyword.map { it.concernKeyword }
+//        val userRewards = user.userRewards.groupBy {
+//            it.reward.rewardType
+//        }.map {
+//            Pair(it.key, it.value.size)
+//        }
+//        val userInterestKeyword = user.userInterestKeyword.map { it.interestKeyword }
+//        val userConcernKeyword = user.userConcernKeyword.map { it.concernKeyword }
+//        val interestKeywordAll = interestKeywordRepository.findAll()
+//        val concernKeywordAll = concernKeywordRepository.findAll()
+//        return UserDetail(
+//            user.username,
+//            user.roleType,
+//            user.profileMessage,
+//            user.profileImageUrl,
+//            interestKeywordAll.map { interestKeyword ->
+//                if (interestKeyword in userInterestKeyword) 1 else 0
+//            },
+//            concernKeywordAll.map { concernKeyword ->
+//                if (concernKeyword in userConcernKeyword) 1 else 0
+//            },
+//            RewardType.entries.map { rewardType ->
+//                UserDetail.RewardDetail(
+//                    rewardType.name,
+//                    userRewards.firstOrNull {
+//                        it.first == rewardType
+//                    }?.second ?: 0
+//                )
+//            },
+//            user.isMatchingActive
+//        )
         val interestKeywordAll = interestKeywordRepository.findAll()
         val concernKeywordAll = concernKeywordRepository.findAll()
-        return UserDetail(
-            user.username,
-            user.roleType,
-            user.profileMessage,
-            user.profileImageUrl,
-            interestKeywordAll.map { interestKeyword ->
-                if (interestKeyword in userInterestKeyword) 1 else 0
-            },
-            concernKeywordAll.map { concernKeyword ->
-                if (concernKeyword in userConcernKeyword) 1 else 0
-            },
-            RewardType.entries.map { rewardType ->
-                UserDetail.RewardDetail(
-                    rewardType.name,
-                    userRewards.firstOrNull {
-                        it.first == rewardType
-                    }?.second ?: 0
-                )
-            },
-            user.isMatchingActive
-        )
+        return user.toResponseDto(interestKeywordAll, concernKeywordAll)
+    }
+
+    @Transactional
+    fun findById(userId:Long):UserResponseDto{
+        val user = userRepository.findById(userId).orElse(null)?:throw Exception("사용자 정보가 없습니다")
+        val interestKeywordAll = interestKeywordRepository.findAll()
+        val concernKeywordAll = concernKeywordRepository.findAll()
+        return user.toResponseDto(interestKeywordAll, concernKeywordAll)
     }
 
     @Transactional

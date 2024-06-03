@@ -7,7 +7,7 @@ class UserMessage(
     val senderId:Long,
     val roomId:Long?,
     var chatId:Long?,
-    var createdAt:String?,
+    var createdAt:String? = null,
 ):Serializable{
     override fun toString(): String {
         return "UserMessage(content='$content', senderId=$senderId, roomId=$roomId, chatId=$chatId, createdAt=$createdAt)"

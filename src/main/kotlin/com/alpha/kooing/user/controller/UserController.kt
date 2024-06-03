@@ -57,13 +57,20 @@ class UserController(
     @Operation(summary = "유저 정보 조회")
     fun getUser(
         httpServletRequest: HttpServletRequest,
-    ): ResponseEntity<ApiResponse<UserDetail>> {
+    ): ResponseEntity<ApiResponse<UserResponseDto>> {
         val token = jwtTokenProvider.resolveToken(httpServletRequest)
         return ResponseEntity.ok(
             ApiResponse.success(
                 userService.getUser(token)
             )
         )
+    }
+
+    @GetMapping("/user/{userId}")
+    @Operation(summary = "id로 사용자 조회")
+    fun getUserById(@PathVariable("userId") userId:Long):ApiResponse<*>{
+        val user = userService.findById(userId)
+        return ApiResponse(message = HttpStatus.OK.name, user)
     }
 
     @PutMapping("/user/profile")

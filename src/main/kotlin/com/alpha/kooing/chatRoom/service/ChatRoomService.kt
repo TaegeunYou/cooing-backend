@@ -27,11 +27,18 @@ class ChatRoomService(
     @Transactional
     fun findByUserList(userIdList:List<Long>):ChatRoomResponseDto?{
         val chatRoom = chatRoomRepository.findByUserList(userIdList)?:return null
+        val userId = userIdList[0]
+        val unreadChatList = chatRepository.getUnreadChatByUserId(userId, chatRoom.id)
+        val chatList = chatRepository.findByChatRoomId(chatRoom.id as Long)
+        val lastChat = chatList.lastOrNull()
+        val lastUpdate = lastChat?.createdAt?:LocalDateTime.now()
         return ChatRoomResponseDto(
             id = chatRoom.id,
-            unreadChat = chatRoom.unreadChat.toLong(),
-            lastChat = "",
-            lastUpdate = ""
+            unreadChat = unreadChatList.size.toLong(),
+            lastChat = lastChat?.content,
+            lastUpdate = lastUpdate.format(DateTimeFormatter.ofPattern(
+                if (lastUpdate.toLocalDate()!= LocalDate.now()) "MM-dd" else "HH:mm"
+            ))
         )
     }
 
