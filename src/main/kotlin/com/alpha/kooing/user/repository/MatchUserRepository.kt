@@ -8,7 +8,7 @@ import java.util.*
 
 interface MatchUserRepository:JpaRepository<MatchUser, Long> {
     @Modifying
-    @Query("DELETE FROM MatchUser u WHERE u.user.id=:userId")
+    @Query("DELETE FROM MatchUser u WHERE u.user.id=:userId or u.matchUser.id=:userId")
     fun deleteAllByUserId(userId:Long)
 
     @Query("SELECT u FROM MatchUser u WHERE u.user.id=:userId or u.matchUser.id=:userId")
