@@ -30,13 +30,15 @@ class NotificationService(
         val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
         val userNotification = notificationRepository.findAllByUserId(user.id!!)
         return GetNotificationsResponse(
-            userNotification.map { item ->
-                GetNotificationsResponse.NotificationItem(
-                    item.title,
-                    item.content,
-                    Utils.dateTimeToFrontFormat(item.createdAt)
-                )
-            }
+            userNotification
+                .sortedByDescending { it.id }
+                .map { item ->
+                    GetNotificationsResponse.NotificationItem(
+                        item.title,
+                        item.content,
+                        Utils.dateTimeToFrontFormat(item.createdAt)
+                    )
+                }
         )
     }
 

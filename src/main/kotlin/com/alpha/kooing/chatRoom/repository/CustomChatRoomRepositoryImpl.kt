@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository
 class CustomChatRoomRepositoryImpl(
     @PersistenceContext val entityManager: EntityManager
 ):CustomChatRoomRepository{
-    override fun findByUserList(userIdList: List<Long>): ChatRoom? {
+    override fun findByUserList(userIdList: List<Long?>): ChatRoom? {
         val userCount = userIdList.size
         val query = """
             SELECT cr FROM ChatRoom cr WHERE cr.id IN (

@@ -6,4 +6,5 @@ class ChatResponseDto(
     val userId:Long?,
     val chatRoomId:Long?,
     val content:String,
+    val createdAt:String
 )

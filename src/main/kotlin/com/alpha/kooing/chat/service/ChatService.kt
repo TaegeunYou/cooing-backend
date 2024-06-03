@@ -31,6 +31,12 @@ class ChatService(
     }
 
     @Transactional
+    fun findByChatId(chatId:Long):ChatResponseDto?{
+        val chat = chatRepository.findById(chatId).orElse(null)?:return null
+        return chat.toResponseDto()
+    }
+
+    @Transactional
     fun findByRoomId(roomId:Long):List<ChatResponseDto>?{
         val chatList = chatRepository.findByChatRoomId(roomId)
         return chatList.map { it.toResponseDto() }
