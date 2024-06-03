@@ -10,12 +10,11 @@ import com.alpha.kooing.user.User
 import com.alpha.kooing.user.entity.MatchUser
 import com.alpha.kooing.user.entity.UserConcernKeyword
 import com.alpha.kooing.user.entity.UserInterestKeyword
-import com.alpha.kooing.user.enum.RoleType
 import com.alpha.kooing.user.event.SignUpEvent
 import com.alpha.kooing.user.repository.*
 import com.alpha.kooing.userMatching.repository.UserMatchingRepository
-import com.alpha.kooing.util.ImageUtil
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -30,7 +29,6 @@ class UserService(
     private val userConcernKeywordRepository: UserConcernKeywordRepository,
     private val interestKeywordRepository: InterestKeywordRepository,
     private val concernKeywordRepository: ConcernKeywordRepository,
-    private val userMatchingRepository: UserMatchingRepository,
     private val userManager: LoginUserManager,
     private val applicationEventPublisher: ApplicationEventPublisher,
     private val matchUserRepository: MatchUserRepository,
@@ -84,21 +82,34 @@ class UserService(
                 email = jwtTokenProvider.getJwtEmail(token),
                 username = userInfo.nickname,
                 role = Role.USER,
-                isMatchingActive = false,
+                isMatchingActive = userInfo.isMatchingActive,
                 profileImageUrl = imageUrl,
                 profileMessage = userInfo.profileMessage,
                 roleType = userInfo.role,
             )
         )
-        println(concernKeywordRepository.findAllByName(userInfo.concernKeyword[0]).getOrNull()?:"no such keyword")
-        userInfo.concernKeyword.forEach {
-            val concernKeyword = concernKeywordRepository.findAllByName(it).getOrNull()?:return null
-            userConcernKeywordRepository.save(UserConcernKeyword(user=user, concernKeyword = concernKeyword))
+        val interestKeywords = interestKeywordRepository.findAll()
+        val concernKeywords = concernKeywordRepository.findAll()
+        val userInterestKeywords = interestKeywords.filterIndexed { idx, interestKeyword ->
+            userInfo.interestKeyword[idx] == 1
         }
-        userInfo.interestKeyword.forEach {
-            val interestKeyword = interestKeywordRepository.findAllByName(it).getOrNull()?:return null
-            userInterestKeywordRepository.save(UserInterestKeyword(user=user, interestKeyword = interestKeyword))
+        val userConcernKeywords = concernKeywords.filterIndexed { idx, concernKeyword ->
+            userInfo.concernKeyword[idx] == 1
         }
+        userInterestKeywordRepository.saveAll(
+            userInterestKeywords.map {
+                UserInterestKeyword(
+                    null, user, it
+                )
+            }
+        )
+        userConcernKeywordRepository.saveAll(
+            userConcernKeywords.map {
+                UserConcernKeyword(
+                    null, user, it
+                )
+            }
+        )
         applicationEventPublisher.publishEvent(SignUpEvent(user))
         return user
     }
@@ -131,35 +142,32 @@ class UserService(
     fun updateUserMatchingKeyword(token: String, request: UpdateUserMatchingKeywordRequest) {
         val userEmail = jwtTokenProvider.getJwtEmail(token)
         val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
-        val interestKeywords = interestKeywordRepository.findAll()
-        val concernKeywords = concernKeywordRepository.findAll()
-        userInterestKeywordRepository.deleteAllById(user.userInterestKeyword.map { it.id })
-        userConcernKeywordRepository.deleteAllById(user.userConcernKeyword.map { it.id })
-        userInterestKeywordRepository.saveAll(
-            interestKeywords
-                .filterIndexed { idx ,it ->
-                    request.interestKeyword[idx] == 1
-                }
-                .map { updateInterestKeyword ->
-                    UserInterestKeyword(null, user, updateInterestKeyword)
-                }
-        )
-        concernKeywords
-            .filterIndexed { idx ,it ->
-                request.concernKeyword[idx] == 1
-            }
-            .map { updateConcernKeyword ->
-                UserConcernKeyword(null, user, updateConcernKeyword)
-            }
-        userConcernKeywordRepository.saveAll(
-            concernKeywords
-                .filterIndexed { idx ,it ->
-                    request.concernKeyword[idx] == 1
-                }
-                .map { updateConcernKeyword ->
-                    UserConcernKeyword(null, user, updateConcernKeyword)
-                }
-        )
+        if (request.interestKeyword != null) {
+            val interestKeywords = interestKeywordRepository.findAll()
+            userInterestKeywordRepository.deleteAllById(user.userInterestKeyword.map { it.id })
+            userInterestKeywordRepository.saveAll(
+                interestKeywords
+                    .filterIndexed { idx ,it ->
+                        request.interestKeyword[idx] == 1
+                    }
+                    .map { updateInterestKeyword ->
+                        UserInterestKeyword(null, user, updateInterestKeyword)
+                    }
+            )
+        }
+        if (request.concernKeyword != null) {
+            val concernKeywords = concernKeywordRepository.findAll()
+            userConcernKeywordRepository.deleteAllById(user.userConcernKeyword.map { it.id })
+            userConcernKeywordRepository.saveAll(
+                concernKeywords
+                    .filterIndexed { idx ,it ->
+                        request.concernKeyword[idx] == 1
+                    }
+                    .map { updateConcernKeyword ->
+                        UserConcernKeyword(null, user, updateConcernKeyword)
+                    }
+            )
+        }
         this.updateUserMatchingKeywordEvent(user)
     }
 
@@ -228,39 +236,82 @@ class UserService(
         }
     }
 
+    //매칭 가능한 유저 중에 랜덤으로 1명 찾기, 아예 없으면 null
     @Transactional
-    fun findMatchingUser(ikw:List<String>, ckw:List<String>, userId:Long): List<User>{
-        val users = userManager.getLoginUserList()
-        val matchUser = users.map { it ->
-            val user = userRepository.findByEmail(it.email).orElse(null)
-            if(user == null || user.id == userId){
+    fun findMatchingUserOrNull(ikw:List<String>, ckw:List<String>, user:User): User? {
+        val users = userManager.getLoginUserList().filter { it.id != user.id }
+        val matchUsers = users.mapNotNull { it ->
+            val matchUser = userRepository.findByEmail(it.email).orElse(null)
+            val matchUserMatchingInfo = matchUserRepository.findByUserId(matchUser.id!!).getOrNull()
+            val checkCkw = matchUser.userConcernKeyword.any { it.concernKeyword.name in ckw }
+            val checkIkw = matchUser.userInterestKeyword.any { it.interestKeyword.name in ikw }
+            if ((matchUser == null)
+                || (matchUser.id == user.id)
+                || (matchUser.roleType == user.roleType)
+                || (matchUserMatchingInfo != null)
+                || (!checkIkw && !checkCkw)
+                || (!matchUser.isMatchingActive)
+            ) {
                 null
-            }else{
-                val checkCkw = user.userConcernKeyword.any{ it.concernKeyword.name in ckw }
-                val checkIkw = user.userInterestKeyword.any { it.interestKeyword.name in ikw }
-                if(checkIkw && checkCkw) user else null
+            } else {
+                matchUser
             }
-        }.filterNotNull()
-        return matchUser
+        }
+        return if (matchUsers.isNotEmpty()) {
+            matchUsers.random()
+        } else {
+            null
+        }
     }
 
     @Transactional
-    fun findOrCreateMatchUser(userId:Long):List<UserResponseDto>?{
+    fun findOrCreateMatchUser(userId:Long): UserResponseDto? {
         val currentUser = userRepository.findById(userId).orElse(null)?:return null
-        var matchUsers = matchUserRepository.findAllByUserId(userId)
+        val matchInfo = matchUserRepository.findByUserId(userId).getOrNull()
         val interestKeywordAll = interestKeywordRepository.findAll()
         val concernKeywordAll = concernKeywordRepository.findAll()
-        if(matchUsers.isEmpty()){
+        if (matchInfo == null) {       //매칭이 안되어 있으면
             val ckw = currentUser.userConcernKeyword.map { it.concernKeyword.name }
             val ikw = currentUser.userInterestKeyword.map { it.interestKeyword.name }
-                val keywordMatchUsers = findMatchingUser(ikw, ckw, userId)
-            keywordMatchUsers.forEach{ matchUserRepository.save(MatchUser(user = currentUser, matchUser = it)) }
-            return keywordMatchUsers.map { it.toResponseDto(interestKeywordAll, concernKeywordAll) }
+            val keywordMatchUser = findMatchingUserOrNull(ikw, ckw, currentUser)
+            return if (keywordMatchUser != null) {
+                matchUserRepository.save(MatchUser(user = currentUser, matchUser = keywordMatchUser))
+                keywordMatchUser.toResponseDto(interestKeywordAll, concernKeywordAll)
+            } else {
+                null
+            }
+        } else {
+            return listOf(matchInfo.user, matchInfo.matchUser)
+                .first { it.id != currentUser.id }
+                .toResponseDto(interestKeywordAll, concernKeywordAll)
         }
-        return matchUsers.map { it.user.toResponseDto(interestKeywordAll, concernKeywordAll) }
     }
 
     private fun updateUserMatchingKeywordEvent(user: User) {
 //        applicationEventPublisher.publishEvent(ChangeUserKeywordEvent(user, user.ma))
+    }
+
+    @Transactional(readOnly = true)
+    fun getUserMate(userId: Long): UserDetail? {
+        val matchInfo = matchUserRepository.findByUserId(userId).getOrNull() ?: return null
+        val matchUser = listOf(matchInfo.matchUser, matchInfo.user).first { it.id != userId }
+        val interestKeywordAll = interestKeywordRepository.findAll()
+        val concernKeywordAll = concernKeywordRepository.findAll()
+        val userInterestKeyword = matchUser.userInterestKeyword.map { it.interestKeyword }
+        val userConcernKeyword = matchUser.userConcernKeyword.map { it.concernKeyword }
+        return UserDetail(
+            matchUser.username,
+            matchUser.roleType,
+            matchUser.profileMessage,
+            matchUser.profileImageUrl,
+            interestKeywordAll.map { interestKeyword ->
+                if (interestKeyword in userInterestKeyword) 1 else 0
+            },
+            concernKeywordAll.map { concernKeyword ->
+                if (concernKeyword in userConcernKeyword) 1 else 0
+            },
+            emptyList(),
+            matchUser.isMatchingActive
+        )
     }
 }

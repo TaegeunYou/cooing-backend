@@ -96,7 +96,7 @@ class User(
     @Column(nullable = false)
     var lastLoginDatetime: LocalDateTime = LocalDateTime.now(),
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     var house: String = "",
 
     @Id

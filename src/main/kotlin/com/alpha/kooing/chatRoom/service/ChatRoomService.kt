@@ -9,7 +9,6 @@ import com.alpha.kooing.user.repository.MatchUserRepository
 import com.alpha.kooing.user.repository.UserRepository
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
-import kotlin.jvm.optionals.getOrDefault
 
 @Service
 class ChatRoomService(
@@ -39,17 +38,17 @@ class ChatRoomService(
 
     @Transactional
     fun getOrCreateMatchUserChatRooms(userId:Long):List<ChatRoomResponseDto>?{
-        val matchUsers = matchUserRepository.findAllByUserId(userId).map { it.matchUser }
+        val matchUsers = matchUserRepository.findByUserId(userId).map { it.matchUser }
         val chatRoomList = matchUsers.map{
             val userIdList = listOf(userId, it.id as Long)
             val chatRoom = chatRoomRepository.findByUserList(userIdList)
             if(chatRoom == null){
-                val savedChatRoom = createChatRoomByUserIdList(userIdList)?:return null
+                val savedChatRoom = createChatRoomByUserIdList(userIdList)
                 savedChatRoom
             }else{
                 chatRoom
             }
         }
-        return chatRoomList.map { it.toResponseDto() }
+        return listOf(chatRoomList.map { it?.toResponseDto() }.get())
     }
 }

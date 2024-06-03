@@ -32,11 +32,25 @@ class UserController(
 
     @GetMapping("/user/match")
     @Operation(summary = "현재 로그인한 유저 매칭 정보 생성. 만약 매칭 정보가 없다면 새로 생성해서 제공")
-    fun findSimilarInterest(request: HttpServletRequest) : ApiResponse<List<UserResponseDto>>{
+    fun findSimilarInterest(request: HttpServletRequest) : ApiResponse<UserResponseDto>{
         val token = jwtTokenProvider.resolveToken(request)
         val userId = jwtTokenProvider.getJwtUserId(token).toLong()
-        val users = userService.findOrCreateMatchUser(userId)
-        return ApiResponse(HttpStatus.OK.name, users)
+        val matchUser = userService.findOrCreateMatchUser(userId)
+        return ApiResponse(HttpStatus.OK.name, matchUser)
+    }
+
+    @GetMapping("/user/mate")
+    @Operation(summary = "MATE 정보 조회")
+    fun getUserMate(
+        request: HttpServletRequest
+    ): ResponseEntity<ApiResponse<UserDetail?>> {
+        val token = jwtTokenProvider.resolveToken(request)
+        val userId = jwtTokenProvider.getJwtUserId(token).toLong()
+        return ResponseEntity.ok(
+            ApiResponse.success(
+                userService.getUserMate(userId)
+            )
+        )
     }
 
     @GetMapping("/user")

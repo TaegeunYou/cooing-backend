@@ -28,9 +28,7 @@ class HouseController(
         val token = jwtTokenProvider.resolveToken(httpServletRequest)
         return ResponseEntity.ok(
             ApiResponse.success(
-                GetHouseResponse(
-                    houseService.getHouse(token)
-                )
+                houseService.getHouse(token)
             )
         )
     }

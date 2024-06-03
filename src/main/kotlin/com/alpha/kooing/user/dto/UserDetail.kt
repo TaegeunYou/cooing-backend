@@ -2,8 +2,7 @@ package com.alpha.kooing.user.dto
 
 import com.alpha.kooing.user.enum.RoleType
 
-class
-UserDetail(
+class UserDetail(
     val name: String,
     val role: RoleType,
     val profileMessage: String,
