@@ -2,9 +2,11 @@ package com.alpha.kooing.user.repository
 
 import com.alpha.kooing.user.entity.MatchUser
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 
 interface MatchUserRepository:JpaRepository<MatchUser, Long> {
+    @Modifying
     @Query("DELETE FROM MatchUser u WHERE u.user.id=:userId")
     fun deleteAllByUserId(userId:Long)
 
