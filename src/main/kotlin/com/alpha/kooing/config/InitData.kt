@@ -6,6 +6,7 @@ import com.alpha.kooing.chatMatching.entity.ChatMatching
 import com.alpha.kooing.chatMatching.repository.ChatMatchingRepository
 import com.alpha.kooing.chatRoom.entity.ChatRoom
 import com.alpha.kooing.chatRoom.repository.ChatRoomRepository
+import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.User
 import com.alpha.kooing.user.enum.RoleType
@@ -20,17 +21,22 @@ class InitData(
     val chatRoomRepository: ChatRoomRepository,
     val chatMatchingRepository: ChatMatchingRepository,
     val chatRepository: ChatRepository,
+    val jwtTokenProvider: JwtTokenProvider,
+    val loginUserManager: LoginUserManager
 ){
     @EventListener(ApplicationReadyEvent::class)
     fun initData(){
-//        val userList = createUser()
-//        val chatRoomList:MutableList<ChatRoom> = mutableListOf()
-//        for( user in userList){
-//            chatRoomList.add(createChatRoom(user))
-//        }
-//        for( chatRoom in chatRoomList){
-//            createChat(chatRoom)
-//        }
+        val users = userRepository.findAll()?:return
+        users.forEach{
+            val token = jwtTokenProvider.createJwt(
+                id = it.id,
+                email = it.email,
+                username = it.username,
+                role = it.role.name,
+                expiration = jwtTokenProvider.expiration
+            )
+            loginUserManager.loginUser(it.id, token)
+        }
     }
 
     fun createUser():MutableList<User>{

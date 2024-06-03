@@ -49,17 +49,27 @@ class LoginController(
     fun getTestUser():ApiResponse<*>{
         val users = userService.findAll()?:return ApiResponse(HttpStatus.BAD_REQUEST.name, null)
         val user = users.getOrNull(0)?:return ApiResponse(HttpStatus.BAD_REQUEST.name, null)
-        val token = jwtTokenProvider.createJwt(
+        val testUserToken = jwtTokenProvider.createJwt(
             id = user.id,
             email = user.email,
             username = user.username,
             role = user.role.name,
             expiration = jwtTokenProvider.expiration
         )
-        userManager.loginUser(user.id, token)
+        users.map {
+            val token = jwtTokenProvider.createJwt(
+                id = it.id,
+                email = it.email,
+                username = it.username,
+                role = it.role.name,
+                expiration = jwtTokenProvider.expiration
+            )
+            userManager.loginUser(it.id, token)
+        }
+        userManager.loginUser(user.id, testUserToken)
         return ApiResponse(
             message = HttpStatus.OK.name,
-            body = token
+            body = testUserToken
         )
     }
 
@@ -98,10 +108,11 @@ class LoginController(
     }
 
     @GetMapping("/signout")
-    fun logout():ApiResponse<*>{
+    fun logout(request: HttpServletRequest):ApiResponse<*>{
         try {
-            val oauthUser = SecurityContextHolder.getContext().authentication.principal as CustomOAuth2User
-            userManager.logoutUser(oauthUser.id)
+            val token = jwtTokenProvider.resolveToken(request)
+            val userId = jwtTokenProvider.getJwtUserId(token).toLong()
+            userManager.logoutUser(userId)
             return ApiResponse(HttpStatus.OK.name, null)
         }catch (e:Exception){
             return ApiResponse(HttpStatus.BAD_REQUEST.name, null)
