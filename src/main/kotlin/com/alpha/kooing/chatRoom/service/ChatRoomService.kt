@@ -1,5 +1,7 @@
 package com.alpha.kooing.chatRoom.service
 
+import com.alpha.kooing.chat.entity.Chat
+import com.alpha.kooing.chat.repository.ChatRepository
 import com.alpha.kooing.chatMatching.entity.ChatMatching
 import com.alpha.kooing.chatMatching.repository.ChatMatchingRepository
 import com.alpha.kooing.chatRoom.dto.ChatRoomResponseDto
@@ -9,10 +11,15 @@ import com.alpha.kooing.user.repository.MatchUserRepository
 import com.alpha.kooing.user.repository.UserRepository
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Service
 class ChatRoomService(
     val chatRoomRepository:ChatRoomRepository,
+    val chatRepository: ChatRepository,
     val userRepository: UserRepository,
     val chatMatchingRepository: ChatMatchingRepository,
     val matchUserRepository: MatchUserRepository
@@ -20,7 +27,12 @@ class ChatRoomService(
     @Transactional
     fun findByUserList(userIdList:List<Long>):ChatRoomResponseDto?{
         val chatRoom = chatRoomRepository.findByUserList(userIdList)?:return null
-        return chatRoom.toResponseDto()
+        return ChatRoomResponseDto(
+            id = chatRoom.id,
+            unreadChat = chatRoom.unreadChat.toLong(),
+            lastChat = "",
+            lastUpdate = ""
+        )
     }
 
     @Transactional
@@ -37,18 +49,24 @@ class ChatRoomService(
 
 
     @Transactional
-    fun getOrCreateMatchUserChatRooms(userId:Long):List<ChatRoomResponseDto>?{
-        val matchUsers = matchUserRepository.findByUserId(userId).map { it.matchUser }
-        val chatRoomList = matchUsers.map{
-            val userIdList = listOf(userId, it.id as Long)
-            val chatRoom = chatRoomRepository.findByUserList(userIdList)
-            if(chatRoom == null){
-                val savedChatRoom = createChatRoomByUserIdList(userIdList)
-                savedChatRoom
-            }else{
-                chatRoom
-            }
+    fun getOrCreateMatchUserChatRooms(userId:Long):ChatRoomResponseDto?{
+        val matchUser = matchUserRepository.findByUserId(userId).map { it.matchUser }.orElse(null)?:return null
+        val userIdList = listOf(matchUser.id as Long, userId)
+        var chatRoom = chatRoomRepository.findByUserList(userIdList)
+        if(chatRoom == null){
+            chatRoom = createChatRoomByUserIdList(userIdList)?:return null
         }
-        return listOf(chatRoomList.map { it?.toResponseDto() }.get())
+        val unreadChatList = chatRepository.getUnreadChatByUserId(userId, chatRoom.id)
+        val chatList = chatRepository.findByChatRoomId(chatRoom.id as Long)
+        val lastChat = chatList.lastOrNull()
+        val lastUpdate = lastChat?.createdAt?:LocalDateTime.now()
+        return ChatRoomResponseDto(
+            id = chatRoom.id,
+            unreadChat = unreadChatList.size.toLong(),
+            lastChat = lastChat?.content,
+            lastUpdate = lastUpdate.format(DateTimeFormatter.ofPattern(
+                if (lastUpdate.toLocalDate()!= LocalDate.now()) "MM-dd" else "HH:mm"
+            ))
+        )
     }
 }

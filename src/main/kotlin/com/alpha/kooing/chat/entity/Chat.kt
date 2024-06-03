@@ -4,7 +4,12 @@ import com.alpha.kooing.chat.dto.ChatResponseDto
 import com.alpha.kooing.chatRoom.entity.ChatRoom
 import com.alpha.kooing.user.User
 import com.alpha.kooing.util.BaseTimeEntity
+import com.alpha.kooing.util.DateUtil
 import jakarta.persistence.*
+import org.joda.time.DateTime
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Entity
 class Chat(
@@ -26,7 +31,15 @@ class Chat(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id:Long? = null
 ):BaseTimeEntity(){
+
     fun toResponseDto():ChatResponseDto{
-        return ChatResponseDto(id, unread, user.id, chatRoom.id, content)
+        return ChatResponseDto(
+            this.id,
+            this.unread,
+            this.user.id,
+            this.chatRoom.id,
+            this.content,
+            DateUtil.getDateTimeFormat(this.createdAt)
+        )
     }
 }

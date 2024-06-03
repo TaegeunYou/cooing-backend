@@ -21,7 +21,4 @@ class ChatRoom(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id:Long? = null
 ):BaseTimeEntity(){
-    fun toResponseDto():ChatRoomResponseDto{
-        return ChatRoomResponseDto(id, unreadChat)
-    }
 }
