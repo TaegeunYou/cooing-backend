@@ -1,14 +1,14 @@
 package com.alpha.kooing.user.dto
 
 import com.alpha.kooing.user.Role
-import com.alpha.kooing.user.entity.UserConcernKeyword
-import com.alpha.kooing.user.entity.UserInterestKeyword
+import com.alpha.kooing.user.enum.RoleType
 
 class UserResponseDto(
     val id:Long?,
     val username:String,
     val email:String,
     val role: Role,
+    val roleType: RoleType,
     val profileMessage: String,
     val profileImageUrl:String?,
     val userInterestKeyword: List<Int>,

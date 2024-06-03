@@ -111,6 +111,7 @@ class User(
             email = this.email,
             username = this.username,
             role = this.role,
+            roleType = this.roleType,
             profileMessage = this.profileMessage,
             profileImageUrl = this.profileImageUrl,
             userInterestKeyword = interestKeywordAll.map {
