@@ -7,8 +7,8 @@ class UserCreateDto(
     val nickname: String,
     val role: RoleType,
     val profileMessage: String,
-    val interestKeyword: List<String>,
-    val concernKeyword: List<String>,
+    val interestKeyword: List<Int>,
+    val concernKeyword: List<Int>,
     val isMatchingActive: Boolean,
 ) {
     class RewardDetail(

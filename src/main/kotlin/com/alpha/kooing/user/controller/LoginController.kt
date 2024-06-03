@@ -5,10 +5,7 @@ import com.alpha.kooing.config.LoginUserManager
 import com.alpha.kooing.config.jwt.JwtTokenProvider
 import com.alpha.kooing.user.Role
 import com.alpha.kooing.user.User
-import com.alpha.kooing.user.dto.CustomOAuth2User
-import com.alpha.kooing.user.dto.GoogleUserDto
-import com.alpha.kooing.user.dto.UserCreateDto
-import com.alpha.kooing.user.dto.UserLoginDto
+import com.alpha.kooing.user.dto.*
 import com.alpha.kooing.user.enum.RoleType
 import com.alpha.kooing.user.service.LoginService
 import com.alpha.kooing.user.service.UserService
@@ -23,6 +20,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.boot.json.JsonParser
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -78,10 +76,16 @@ class LoginController(
 
 
     @PostMapping("/signup", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun signup(request: HttpServletRequest, response: HttpServletResponse, @RequestPart userInfo:UserCreateDto, @RequestPart("profileImage", required = false) profileImage: MultipartFile?) : ApiResponse<*>{
+    fun signup(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        @RequestPart userInfo:UserCreateDto,
+        @RequestPart("profileImage", required = false
+    ) profileImage: MultipartFile?) : ResponseEntity<ApiResponse<SignUpResponse>>{
         try {
             val token = jwtTokenProvider.resolveToken(request)
-            val user = userService.saveUser(token, userInfo, profileImage)?:return ApiResponse("save user fail", null)
+            val user = userService.saveUser(token, userInfo, profileImage)?:return ResponseEntity.ok().body(ApiResponse("save user fail", null))
+            val matchUser = userService.findOrCreateMatchUser(user.id!!)
             val newToken = jwtTokenProvider.createJwt(
                 id = user.id,
                 email = user.email,
@@ -90,10 +94,17 @@ class LoginController(
                 expiration = expiration
             )
             userManager.loginUser(user.id, newToken)
-            return ApiResponse(HttpStatus.OK.name, newToken)
+            return ResponseEntity.ok().body(
+                ApiResponse.success(
+                    SignUpResponse(
+                        user.id,
+                        matchUser != null
+                    )
+                )
+            )
         }catch (e:Exception){
             e.printStackTrace()
-            return ApiResponse(HttpStatus.BAD_REQUEST.name, null)
+            throw e
         }
     }
 
