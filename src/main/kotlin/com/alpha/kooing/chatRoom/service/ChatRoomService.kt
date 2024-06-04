@@ -45,12 +45,20 @@ class ChatRoomService(
 
     @Transactional
     fun convertEntityToResponseDto(sender:Long, chatRoom:ChatRoom):ChatRoomResponseDto{
+        val receiverId = chatRoom.chatMatching.map {
+            if(it.user.id != sender){
+                it.user.id as Long
+            }else{
+                null
+            }
+        }.filterNotNull().getOrNull(0)?:throw Exception("잘못된 채팅방 정보에 접근")
         val unreadChatList = chatRepository.getUnreadChatByUserId(sender, chatRoom.id)
         val chatList = chatRepository.findByChatRoomId(chatRoom.id as Long)
         val lastChat = chatList.lastOrNull()
         val lastUpdate = lastChat?.createdAt?:LocalDateTime.now()
         return ChatRoomResponseDto(
             id = chatRoom.id,
+            receiverId = receiverId,
             unreadChat = unreadChatList.size.toLong(),
             lastChat = lastChat?.content,
             lastUpdate = DateUtil.getDateTimeFormat(lastUpdate)
@@ -62,7 +70,8 @@ class ChatRoomService(
         val userIdList = mutableListOf(sender)
         receiver?.forEach{ userIdList.add(it) }
         var chatRoom = chatRoomRepository.findByUserList(userIdList)
-        if(chatRoom == null){
+        if(chatRoom == null) {
+            if(receiver == null) throw Exception("채팅방 정보가 없습니다")
             createChatRoomByUserIdList(userIdList)
             chatRoom = chatRoomRepository.findByUserList(userIdList)?:throw Exception("채팅방 생성 실패")
         }
