@@ -4,6 +4,7 @@ import com.alpha.kooing.chatRoom.dto.ChatRoomResponseDto
 import com.alpha.kooing.chatRoom.service.ChatRoomService
 import com.alpha.kooing.common.dto.ApiResponse
 import com.alpha.kooing.config.jwt.JwtTokenProvider
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
@@ -14,28 +15,19 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @RestController
-@RequestMapping("/chatroom")
 class ChatRoomController(
     val chatRoomService: ChatRoomService,
     val jwtTokenProvider: JwtTokenProvider
 ){
-    @GetMapping("")
-    fun createOrFindRoom(@RequestParam userIdList:List<Long>): ApiResponse<*> {
-        var chatRoom = chatRoomService.findByUserList(userIdList)
-        if(chatRoom == null) {
-            val newChatRoom = chatRoomService.createChatRoomByUserIdList(userIdList)
-                ?:return ApiResponse(HttpStatus.BAD_REQUEST.name, null)
-            chatRoom = ChatRoomResponseDto(
-                id = newChatRoom.id,
-                unreadChat = 0,
-                lastChat = null,
-                lastUpdate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH : mm"))
-            )
-        }
+    @GetMapping("/chatroom")
+    @Operation(summary = "사용자 목록으로 채팅방 생성 / 없으면 새로 생성해서 제공")
+    fun createOrFindRoom(@RequestParam sender:Long, @RequestParam receiver:MutableList<Long>): ApiResponse<*> {
+        val chatRoom = chatRoomService.getOrCreateChatRoomByUserList(sender, receiver)
         return ApiResponse(HttpStatus.OK.name, chatRoom)
     }
 
-    @GetMapping("/match")
+    @GetMapping("chatroom/match")
+    @Operation(summary = "매칭된 사용자와의 채팅방 조회")
     fun getMatchUserChatRoom(request: HttpServletRequest):ApiResponse<*>{
         val token = jwtTokenProvider.resolveToken(request)
         val userId = jwtTokenProvider.getJwtUserId(token).toLong()

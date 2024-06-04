@@ -25,6 +25,7 @@ class UserController(
     private val userService: UserService,
 ){
     @GetMapping("/users")
+    @Operation(summary = "전체 사용자 조회")
     fun findAllUsers() : ApiResponse<*>{
         val result = userService.findAll() ?: return ApiResponse(HttpStatus.BAD_REQUEST.name, null)
         return ApiResponse(HttpStatus.OK.name, result)

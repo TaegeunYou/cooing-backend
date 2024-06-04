@@ -9,6 +9,7 @@ import com.alpha.kooing.chatRoom.entity.ChatRoom
 import com.alpha.kooing.chatRoom.repository.ChatRoomRepository
 import com.alpha.kooing.user.repository.MatchUserRepository
 import com.alpha.kooing.user.repository.UserRepository
+import com.alpha.kooing.util.DateUtil
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -25,25 +26,13 @@ class ChatRoomService(
     val matchUserRepository: MatchUserRepository
 ){
     @Transactional
-    fun findByUserList(userIdList:List<Long>):ChatRoomResponseDto?{
+    fun findByUserList(sender:Long, userIdList:MutableList<Long>):ChatRoomResponseDto?{
         val chatRoom = chatRoomRepository.findByUserList(userIdList)?:return null
-        val userId = userIdList[0]
-        val unreadChatList = chatRepository.getUnreadChatByUserId(userId, chatRoom.id)
-        val chatList = chatRepository.findByChatRoomId(chatRoom.id as Long)
-        val lastChat = chatList.lastOrNull()
-        val lastUpdate = lastChat?.createdAt?:LocalDateTime.now()
-        return ChatRoomResponseDto(
-            id = chatRoom.id,
-            unreadChat = unreadChatList.size.toLong(),
-            lastChat = lastChat?.content,
-            lastUpdate = lastUpdate.format(DateTimeFormatter.ofPattern(
-                if (lastUpdate.toLocalDate()!= LocalDate.now()) "MM-dd" else "HH:mm"
-            ))
-        )
+        return convertEntityToResponseDto(sender, chatRoom)
     }
 
     @Transactional
-    fun createChatRoomByUserIdList(userIdList: List<Long>):ChatRoom?{
+    fun createChatRoomByUserIdList(userIdList: MutableList<Long>):ChatRoom?{
         val savedChatRoom = chatRoomRepository.save(ChatRoom(0))
 
         userIdList.forEach {
@@ -54,16 +43,9 @@ class ChatRoomService(
         return savedChatRoom
     }
 
-
     @Transactional
-    fun getOrCreateMatchUserChatRooms(userId:Long):ChatRoomResponseDto?{
-        val matchUser = matchUserRepository.findByUserId(userId).map { it.matchUser }.orElse(null)?:return null
-        val userIdList = listOf(matchUser.id as Long, userId)
-        var chatRoom = chatRoomRepository.findByUserList(userIdList)
-        if(chatRoom == null){
-            chatRoom = createChatRoomByUserIdList(userIdList)?:return null
-        }
-        val unreadChatList = chatRepository.getUnreadChatByUserId(userId, chatRoom.id)
+    fun convertEntityToResponseDto(sender:Long, chatRoom:ChatRoom):ChatRoomResponseDto{
+        val unreadChatList = chatRepository.getUnreadChatByUserId(sender, chatRoom.id)
         val chatList = chatRepository.findByChatRoomId(chatRoom.id as Long)
         val lastChat = chatList.lastOrNull()
         val lastUpdate = lastChat?.createdAt?:LocalDateTime.now()
@@ -71,9 +53,29 @@ class ChatRoomService(
             id = chatRoom.id,
             unreadChat = unreadChatList.size.toLong(),
             lastChat = lastChat?.content,
-            lastUpdate = lastUpdate.format(DateTimeFormatter.ofPattern(
-                if (lastUpdate.toLocalDate()!= LocalDate.now()) "MM-dd" else "HH:mm"
-            ))
+            lastUpdate = DateUtil.getDateTimeFormat(lastUpdate)
         )
+    }
+
+    @Transactional
+    fun getOrCreateChatRoomByUserList(sender:Long, receiver:MutableList<Long>):ChatRoomResponseDto?{
+        receiver.add(sender)
+        val userIdList = receiver
+        var chatRoom = chatRoomRepository.findByUserList(userIdList)
+        if(chatRoom == null){
+            chatRoom = createChatRoomByUserIdList(userIdList)?:throw Exception("채팅방 생성 실패")
+        }
+        return convertEntityToResponseDto(sender, chatRoom)
+    }
+
+    @Transactional
+    fun getOrCreateMatchUserChatRooms(userId:Long):ChatRoomResponseDto?{
+        val matchUser = matchUserRepository.findByUserId(userId).map { it.matchUser }.orElse(null)?:return null
+        val userIdList = mutableListOf(matchUser.id as Long, userId)
+        var chatRoom = chatRoomRepository.findByUserList(userIdList)
+        if(chatRoom == null){
+            chatRoom = createChatRoomByUserIdList(userIdList)?:return null
+        }
+        return convertEntityToResponseDto(userId, chatRoom)
     }
 }
