@@ -31,14 +31,15 @@ class NotificationService(
         val userNotification = notificationRepository.findAllByUserId(user.id!!)
         return GetNotificationsResponse(
             userNotification
-                .sortedByDescending { it.id }
                 .map { item ->
                     GetNotificationsResponse.NotificationItem(
+                        item.id!!,
                         item.title,
                         item.content,
                         Utils.dateTimeToFrontFormat(item.createdAt)
                     )
                 }
+                .sortedByDescending { it.id }
         )
     }
 
