@@ -26,9 +26,9 @@ class ChatRoomService(
     val matchUserRepository: MatchUserRepository
 ){
     @Transactional
-    fun findByUserList(sender:Long, userIdList:MutableList<Long>):ChatRoomResponseDto?{
+    fun findByUserList(sender:Long, userIdList:MutableList<Long>):List<ChatRoomResponseDto>?{
         val chatRoom = chatRoomRepository.findByUserList(userIdList)?:return null
-        return convertEntityToResponseDto(sender, chatRoom)
+        return chatRoom.map { convertEntityToResponseDto(sender, it) }
     }
 
     @Transactional
@@ -58,24 +58,26 @@ class ChatRoomService(
     }
 
     @Transactional
-    fun getOrCreateChatRoomByUserList(sender:Long, receiver:MutableList<Long>):ChatRoomResponseDto?{
-        receiver.add(sender)
-        val userIdList = receiver
+    fun getOrCreateChatRoomByUserList(sender:Long, receiver:MutableList<Long>?):List<ChatRoomResponseDto>?{
+        val userIdList = mutableListOf(sender)
+        receiver?.forEach{ userIdList.add(it) }
         var chatRoom = chatRoomRepository.findByUserList(userIdList)
         if(chatRoom == null){
-            chatRoom = createChatRoomByUserIdList(userIdList)?:throw Exception("채팅방 생성 실패")
+            createChatRoomByUserIdList(userIdList)
+            chatRoom = chatRoomRepository.findByUserList(userIdList)?:throw Exception("채팅방 생성 실패")
         }
-        return convertEntityToResponseDto(sender, chatRoom)
+        return chatRoom.map { convertEntityToResponseDto(sender, it) }
     }
 
     @Transactional
-    fun getOrCreateMatchUserChatRooms(userId:Long):ChatRoomResponseDto?{
+    fun getOrCreateMatchUserChatRooms(userId:Long):List<ChatRoomResponseDto>?{
         val matchUser = matchUserRepository.findByUserId(userId).map { it.matchUser }.orElse(null)?:return null
         val userIdList = mutableListOf(matchUser.id as Long, userId)
         var chatRoom = chatRoomRepository.findByUserList(userIdList)
         if(chatRoom == null){
-            chatRoom = createChatRoomByUserIdList(userIdList)?:return null
+            createChatRoomByUserIdList(userIdList)
+            chatRoom = chatRoomRepository.findByUserList(userIdList)?:throw Exception("채팅방 생성 실패")
         }
-        return convertEntityToResponseDto(userId, chatRoom)
+        return chatRoom.map { convertEntityToResponseDto(userId, it) }
     }
 }

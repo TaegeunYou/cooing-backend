@@ -21,7 +21,7 @@ class ChatRoomController(
 ){
     @GetMapping("/chatroom")
     @Operation(summary = "사용자 목록으로 채팅방 생성 / 없으면 새로 생성해서 제공")
-    fun createOrFindRoom(@RequestParam sender:Long, @RequestParam receiver:MutableList<Long>): ApiResponse<*> {
+    fun createOrFindRoom(@RequestParam sender:Long, @RequestParam receiver:MutableList<Long>?): ApiResponse<*> {
         val chatRoom = chatRoomService.getOrCreateChatRoomByUserList(sender, receiver)
         return ApiResponse(HttpStatus.OK.name, chatRoom)
     }
