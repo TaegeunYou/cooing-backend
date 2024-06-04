@@ -8,7 +8,5 @@ enum class RewardType {
     하트,
     곰젤리,
     당고,
-    수박바,
-    젤리,
-    사탕
+    수박바
 }

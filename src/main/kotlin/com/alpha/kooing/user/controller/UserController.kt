@@ -119,4 +119,17 @@ class UserController(
             )
         )
     }
+
+    @GetMapping("/user/suggestions")
+    @Operation(summary = "추천 친구 목록 조회")
+    fun getRecommendedFriendList(request: HttpServletRequest, @RequestParam("userId") userId:Long, @RequestParam("count") count:Int?): ResponseEntity<ApiResponse<List<UserResponseDto>>>{
+//        val token = jwtTokenProvider.resolveToken(request)
+//        val userId = jwtTokenProvider.getJwtUserId(token).toLong()
+        val userCount = count?:5
+        return ResponseEntity.ok(
+            ApiResponse.success(
+                userService.getRecommendedFriends(userId, userCount)
+            )
+        )
+    }
 }
