@@ -276,25 +276,38 @@ class UserService(
     }
 
     @Transactional
-    fun findOrCreateMatchUser(userId:Long): UserResponseDto? {
+    fun findOrCreateMatchUser(userId:Long): UserDetail? {
         val currentUser = userRepository.findById(userId).orElse(null)?:return null
-        val matchInfo = matchUserRepository.findByUserId(userId).getOrNull()
+        val matchInfo = getUserMate(userId)
         val interestKeywordAll = interestKeywordRepository.findAll()
         val concernKeywordAll = concernKeywordRepository.findAll()
         if (matchInfo == null) {       //매칭이 안되어 있으면
             val ckw = currentUser.userConcernKeyword.map { it.concernKeyword.name }
             val ikw = currentUser.userInterestKeyword.map { it.interestKeyword.name }
-            val keywordMatchUser = findMatchingUserOrNull(ikw, ckw, currentUser)
-            return if (keywordMatchUser != null) {
-                matchUserRepository.save(MatchUser(user = currentUser, matchUser = keywordMatchUser))
-                keywordMatchUser.toResponseDto(interestKeywordAll, concernKeywordAll)
+            val matchUser = findMatchingUserOrNull(ikw, ckw, currentUser)
+            return if (matchUser != null) {
+                matchUserRepository.save(MatchUser(user = currentUser, matchUser = matchUser))
+                val userInterestKeyword = matchUser.userInterestKeyword.map { it.interestKeyword }
+                val userConcernKeyword = matchUser.userConcernKeyword.map { it.concernKeyword }
+                UserDetail(
+                    matchUser.username,
+                    matchUser.roleType,
+                    matchUser.profileMessage,
+                    matchUser.profileImageUrl,
+                    interestKeywordAll.map { interestKeyword ->
+                        if (interestKeyword in userInterestKeyword) 1 else 0
+                    },
+                    concernKeywordAll.map { concernKeyword ->
+                        if (concernKeyword in userConcernKeyword) 1 else 0
+                    },
+                    emptyList(),
+                    matchUser.isMatchingActive
+                )
             } else {
                 null
             }
         } else {
-            return listOf(matchInfo.user, matchInfo.matchUser)
-                .first { it.id != currentUser.id }
-                .toResponseDto(interestKeywordAll, concernKeywordAll)
+            return matchInfo
         }
     }
 
