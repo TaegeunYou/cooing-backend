@@ -107,8 +107,9 @@ class LoginController(
             return ResponseEntity.ok().body(
                 ApiResponse.success(
                     SignUpResponse(
-                        user.id,
-                        matchUser != null
+                        userId = user.id,
+                        token = newToken,
+                        isMatchingSuccess = (matchUser != null)
                     )
                 )
             )
