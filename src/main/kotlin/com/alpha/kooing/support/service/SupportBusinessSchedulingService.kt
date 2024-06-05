@@ -31,8 +31,16 @@ class SupportBusinessSchedulingService(
                 it.id
             )
         }
-        supportBusinessRepository.deleteAllInBatch()
-        this.bulkInsertSupportBusiness(supportBusinessList)
+        val idxIds = externalIds.map { it.id }
+        //모두 삭제하고 모두 다시 추가하는 방식
+//        supportBusinessRepository.deleteAllInBatch()
+//        this.bulkInsertSupportBusiness(supportBusinessList)
+        //없는 것만 추가하는 방식
+        this.bulkInsertSupportBusiness(
+            supportBusinessList.filter {
+                it.idx !in idxIds
+            }
+        )
     }
 
     /**
