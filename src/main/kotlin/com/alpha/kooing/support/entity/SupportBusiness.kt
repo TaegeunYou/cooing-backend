@@ -36,4 +36,11 @@ class SupportBusiness(
     val registerYear: String,
     @Column(columnDefinition = "text")
     val idx: Int,
-)
+    @Column(columnDefinition = "text")
+    var imageUrl: String? = null,
+) {
+
+    fun updateImageUrl(imageUrl: String) {
+        this.imageUrl = imageUrl
+    }
+}

@@ -1,6 +1,7 @@
 package com.alpha.kooing.support.service
 
 import com.alpha.kooing.config.jwt.JwtTokenProvider
+import com.alpha.kooing.external.AmazonS3Service
 import com.alpha.kooing.support.*
 import com.alpha.kooing.support.dto.*
 import com.alpha.kooing.support.entity.*
@@ -14,7 +15,6 @@ import com.alpha.kooing.support.repository.*
 import com.alpha.kooing.user.repository.UserRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.persistence.EntityManager
-import org.apache.commons.io.FileUtils
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.springframework.context.ApplicationEventPublisher
@@ -24,10 +24,14 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import java.awt.image.BufferedImage
+import java.io.*
+import java.net.HttpURLConnection
+import java.net.URL
 import java.net.URLConnection
+import java.nio.file.Files
+import java.nio.file.Paths
+import javax.imageio.ImageIO
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -44,6 +48,7 @@ class SupportService(
     private val supportBusinessScrapRepository: SupportBusinessScrapRepository,
     private val supportPolicyScrapRepository: SupportPolicyScrapRepository,
     private val applicationEventPublisher: ApplicationEventPublisher,
+    private val amazonS3Service: AmazonS3Service,
 ) {
 
     @Transactional(readOnly = true)
@@ -149,7 +154,7 @@ class SupportService(
         }
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun getSupportBusinessDetail(supportBusinessId: Long): SupportBusinessDetail {
         val supportBusiness = supportBusinessRepository.findById(supportBusinessId).getOrNull()
             ?: throw Exception("해당 지원 사업을 찾을 수 없습니다.")
@@ -172,11 +177,13 @@ class SupportService(
                 ObjectMapper().readValue(it, SupportBusinessDetail.SupportBusinessSummaryFile::class.java)
             } ?: emptyList(),
             supportBusiness.registerYear,
-            this.getSupportBusinessDetailImageUrl(supportBusiness.idx)
+            supportBusiness.imageUrl ?: ""
+//            ?: this.getSupportBusinessDetailImageUrl(supportBusiness)
         )
     }
 
-    private fun getSupportBusinessDetailImageUrl(supportBusinessIdx: Int): String {
+    private fun getSupportBusinessDetailImageUrl(supportBusiness: SupportBusiness): String {
+        val supportBusinessIdx = supportBusiness.idx
         val document = Jsoup
             .connect("https://jaripon.ncrc.or.kr/home/kor/support/projectMng/edit.do")
             .method(Connection.Method.POST)
@@ -185,16 +192,29 @@ class SupportService(
             .data("idx", supportBusinessIdx.toString())
             .post()
         val url = "https://jaripon.ncrc.or.kr" + document.select(".detail_view").select(".img_wrapper").select("img").attr("src")
-        restTemplate.exchange("https://jaripon.ncrc.or.kr/home/kor/support/projectMng/index.do", HttpMethod.GET, HttpEntity("", HttpHeaders()), String::class.java)
-        val response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity("", HttpHeaders(
-            LinkedMultiValueMap(
-                mapOf(
-                    "menuPos" to listOf("1")
-                )
-            )
-        )), String::class.java)
-//        val img = ImageIO.read(response.body?.inputStream())
-        return "https://jaripon.ncrc.or.kr" + document.select(".detail_view").select(".img_wrapper").select("img").attr("src")
+        val imageByteArray = this.getImageByteArray(url)
+        println("image size : ${imageByteArray.size}")
+        val imageUrl = this.getAndSaveImageUrl(supportBusiness, imageByteArray)
+        return imageUrl
+    }
+
+    private fun getImageByteArray(imageUrl: String): ByteArray {
+        val url = URL(imageUrl)
+        val connection = url.openConnection() as HttpURLConnection
+        connection.requestMethod = "GET"
+        connection.inputStream.use { inputStream ->
+            return inputStream.readBytes()
+        }
+    }
+
+    private fun getAndSaveImageUrl(supportBusiness: SupportBusiness, imageByteArray: ByteArray): String {
+        val bufferedImage = ImageIO.read(imageByteArray.inputStream())
+        val outputFile = File("supportBusinessImage_${supportBusiness.idx}.jpg")
+        ImageIO.write(bufferedImage, "jpg", outputFile)
+        val imageUrl = amazonS3Service.upload(outputFile, "business")
+        supportBusiness.updateImageUrl(imageUrl)
+        supportBusinessRepository.save(supportBusiness)
+        return imageUrl
     }
 
     @Transactional(readOnly = true)

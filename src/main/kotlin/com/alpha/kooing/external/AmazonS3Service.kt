@@ -3,6 +3,7 @@ package com.alpha.kooing.external
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.services.s3.model.PutObjectRequest
+import com.nimbusds.common.contenttype.ContentType
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -24,6 +25,17 @@ class AmazonS3Service(
         val objectMataData = ObjectMetadata()
         objectMataData.contentType = uploadFile.contentType
         this.amazonS3.putObject(bucketName, key, uploadFile.inputStream, objectMataData)
+        return amazonS3.getUrl(bucketName, key).toString()
+    }
+
+    fun upload(
+        file: File,
+        category: String
+    ): String {
+        val key = "$category/${UUID.randomUUID().toString().substring(0..10)}.${file.name}"
+        val objectMataData = ObjectMetadata()
+        objectMataData.contentType = ContentType.IMAGE_JPEG.type
+        this.amazonS3.putObject(bucketName, key, file.inputStream(), objectMataData)
         return amazonS3.getUrl(bucketName, key).toString()
     }
 
