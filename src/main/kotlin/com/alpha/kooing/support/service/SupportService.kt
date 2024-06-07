@@ -338,6 +338,27 @@ class SupportService(
         }
     }
 
+    @Transactional
+    fun deleteScrapedSupportPolicy(token: String, supportPolicyId: Long) {
+        val email = jwtTokenProvider.getJwtEmail(token)
+        val user = userRepository.findByEmail(email).orElse(null)?:throw Exception("로그인한 사용자가 아닙니다")
+        supportPolicyScrapRepository.deleteByUserIdAndPolicyId(userId = user.id as Long, policyId = supportPolicyId)
+    }
+
+    @Transactional
+    fun deleteScrapedSupportBusiness(token: String, businessId: Long) {
+        val email = jwtTokenProvider.getJwtEmail(token)
+        val user = userRepository.findByEmail(email).orElse(null)?:throw Exception("로그인한 사용자가 아닙니다")
+        supportBusinessScrapRepository.deleteByUserIdAndBusinessId(userId = user.id as Long, businessId = businessId)
+    }
+
+    @Transactional
+    fun deleteScrapedJobPosting(token: String, jobPostId: Long) {
+        val email = jwtTokenProvider.getJwtEmail(token)
+        val user = userRepository.findByEmail(email).orElse(null)?:throw Exception("로그인한 사용자가 아닙니다")
+        jobPostingScrapRepository.deleteByUserIdAndJobPostId(userId = user.id as Long, jobPostId = jobPostId)
+    }
+
     fun getSupportBusinessDetailFile(supportBusinessId: Long, fileName: String, downName: String): SupportBusinessDetailFileDto {
         val url = "https://jaripon.ncrc.or.kr/fileDownload.do"
         val headers = HttpHeaders()
