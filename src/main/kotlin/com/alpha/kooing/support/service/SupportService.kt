@@ -54,9 +54,9 @@ class SupportService(
         query: String?,
         scrap: Boolean?,
     ): List<SupportPolicySummary> {
+        val userEmail = jwtTokenProvider.getJwtEmail(token)
+        val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
         val supportPolicyList = if (scrap == true) {
-            val userEmail = jwtTokenProvider.getJwtEmail(token)
-            val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
             user.supportPolicyScraps.map {
                 it.supportPolicy
             }
@@ -84,11 +84,13 @@ class SupportService(
             }
             sql.resultList
         }
+        val supportPolicyScrapList = user.supportPolicyScraps.map { ps -> ps.supportPolicy.id }
         return supportPolicyList.map {
             SupportPolicySummary(
                 it.id!!,
                 it.polyBizSjnm,
-                it.polyItcnCn
+                it.polyItcnCn,
+                it.id in supportPolicyScrapList,
             )
         }
     }
@@ -108,9 +110,9 @@ class SupportService(
         query: String?,
         scrap: Boolean?,
     ): List<SupportBusinessSummary> {
+        val userEmail = jwtTokenProvider.getJwtEmail(token)
+        val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
         val supportBusinessList = if (scrap == true) {
-            val userEmail = jwtTokenProvider.getJwtEmail(token)
-            val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
             user.supportBusinessScraps.map {
                 it.supportBusiness
             }
@@ -136,11 +138,13 @@ class SupportService(
             }
             sql.resultList
         }
+        val supportBusinessScrapList = user.supportBusinessScraps.map { ps -> ps.supportBusiness.id }
         return supportBusinessList.map {
             SupportBusinessSummary(
                 it.id!!,
                 it.title,
-                it.category
+                it.category,
+                it.id in supportBusinessScrapList,
             )
         }
     }
@@ -201,9 +205,9 @@ class SupportService(
         query: String?,
         scrap: Boolean?,
     ): List<JobPostingSummary> {
+        val userEmail = jwtTokenProvider.getJwtEmail(token)
+        val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
         val jobPostingList = if (scrap == true) {
-            val userEmail = jwtTokenProvider.getJwtEmail(token)
-            val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
             user.jobPostingScraps.map {
                 it.jobPosting
             }
@@ -229,6 +233,7 @@ class SupportService(
             }
             sql.resultList
         }
+        val jobPostingScrapList = user.jobPostingScraps.map { ps -> ps.jobPosting.id }
         return jobPostingList.map {
             JobPostingSummary(
                 it.id!!,
@@ -239,7 +244,8 @@ class SupportService(
 //                },
                 it.workRgnNmLst,
                 it.acbgCondNmLst,
-                it.recrutSeNm
+                it.recrutSeNm,
+                it.id in jobPostingScrapList
             )
         }
     }
@@ -286,6 +292,8 @@ class SupportService(
         val userEmail = jwtTokenProvider.getJwtEmail(token)
         val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
         val supportPolicy = supportPolicyRepository.findById(supportPolicyId).getOrNull() ?: throw Exception("지원 정책 정보가 올바르지 않습니다.")
+        val userSupportPolicyScrapList = user.supportPolicyScraps.map { it -> it.supportPolicy.id }
+        if(supportPolicyId in userSupportPolicyScrapList) return
         supportPolicyScrapRepository.save(
             SupportPolicyScrap(
                 null, user, supportPolicy
@@ -301,6 +309,8 @@ class SupportService(
         val userEmail = jwtTokenProvider.getJwtEmail(token)
         val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
         val supportBusiness = supportBusinessRepository.findById(supportBusinessId).getOrNull() ?: throw Exception("지원 사업 정보가 올바르지 않습니다.")
+        val supportBusinessScrapList = user.supportBusinessScraps.map { it -> it.supportBusiness.id }
+        if(supportBusinessId in supportBusinessScrapList) return
         supportBusinessScrapRepository.save(
             SupportBusinessScrap(
                 null, user, supportBusiness
@@ -316,6 +326,8 @@ class SupportService(
         val userEmail = jwtTokenProvider.getJwtEmail(token)
         val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
         val jobPosting = jobPostingRepository.findById(jobPostingId).getOrNull() ?: throw Exception("채용 공고 정보가 올바르지 않습니다.")
+        val jopPostingScrapList = user.jobPostingScraps.map { it -> it.jobPosting.id }
+        if(jobPostingId in jopPostingScrapList) return
         jobPostingScrapRepository.save(
             JobPostingScrap(
                 null, user, jobPosting
