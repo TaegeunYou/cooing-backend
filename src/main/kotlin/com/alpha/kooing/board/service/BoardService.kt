@@ -85,7 +85,7 @@ class BoardService(
             Utils.dateTimeToFrontFormat(board.createDatetime),
             board.user.id!!,
             board.user.username,
-            "",     //TODO
+            board.user.profileImageUrl ?: "",
             board.comments.map { comment ->
                 BoardDetail.BoardDetailComment(
                     comment.id!!,

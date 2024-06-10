@@ -86,7 +86,7 @@ class UserService(
     @Transactional
     fun saveUser(token:String, userInfo:UserCreateDto, profileImage: MultipartFile?):User?{
         val existUser = userRepository.findByEmail(jwtTokenProvider.getJwtEmail(token)).orElse(null)
-        if(existUser!=null) return null
+        if(existUser!=null) throw Exception("이미 회원가입한 사용자입니다")
         val imageUrl = if(profileImage!=null) awsS3Service.upload(profileImage, "profile") else null
         val user = userRepository.save(
             User(

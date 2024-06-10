@@ -37,16 +37,15 @@ class SupportPolicySchedulingService(
         val supportPolicies = this.getAllSupportPolicyByExternal()
         if (supportPolicies.isNotEmpty()) {
             //모두 삭제하고 모두 다시 추가하는 방식
-            supportPolicyRepository.deleteAllInBatch()
-            this.bulkInsertSupportPolicy(supportPolicies)
-
+//            supportPolicyRepository.deleteAllInBatch()
+//            this.bulkInsertSupportPolicy(supportPolicies)
             //없는 것만 추가하는 방식
-//            val bizIds = supportPolicyRepository.getAllBizIds()
-//            this.bulkInsertSupportPolicy(
-//                supportPolicies.filter {
-//                    it.bizId !in bizIds
-//                }
-//            )
+            val bizIds = supportPolicyRepository.getAllBizIds()
+            this.bulkInsertSupportPolicy(
+                supportPolicies.filter {
+                    it.bizId !in bizIds
+                }
+            )
         }
     }
 

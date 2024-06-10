@@ -7,6 +7,7 @@ class JobPostingSummary(
     val workRgnNmLst: String? = null,   // 근무지역명목록
     val acbgCondNmLst: String? = null,  // 학력조건명목록
     val recrutSeNm: String? = null, // 채용구분명
+    val isScraped: Boolean? = null,
 )
 
 /*

@@ -38,8 +38,16 @@ class JobPostingSchedulingService(
                 getJobPostingByExternal(pageNo).result!!
             )
         }
-        jobPostingRepository.deleteAllInBatch()
-        this.bulkInsertJobPosting(jobPostingList)
+        //모두 삭제하고 모두 다시 추가하는 방식
+//        jobPostingRepository.deleteAllInBatch()
+//        this.bulkInsertJobPosting(jobPostingList)
+        //없는 것만 추가하는 방식
+        val recrutPblntSns = jobPostingRepository.getAllRecrutPblntSn()
+        this.bulkInsertJobPosting(
+            jobPostingList.filter {
+                it.recrutPblntSn !in recrutPblntSns
+            }
+        )
     }
 
     private fun getJobPostingByExternal(pageNo: Int): JobPostingDto {

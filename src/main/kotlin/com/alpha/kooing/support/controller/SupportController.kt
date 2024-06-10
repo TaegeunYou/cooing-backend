@@ -11,10 +11,8 @@ import com.alpha.kooing.support.service.SupportPolicySchedulingService
 import com.alpha.kooing.support.service.SupportService
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.util.LinkedMultiValueMap
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -28,6 +26,7 @@ class SupportController(
     private val supportBusinessSchedulingService: SupportBusinessSchedulingService,
     private val jobPostingSchedulingService: JobPostingSchedulingService,
     private val jwtTokenProvider: JwtTokenProvider,
+    private val httpServletRequest: HttpServletRequest,
 ) {
 
     @GetMapping("/support/policy")
@@ -152,6 +151,39 @@ class SupportController(
     ): ResponseEntity<ApiResponse<Unit>> {
         val token = jwtTokenProvider.resolveToken(httpServletRequest)
         supportService.scrapSupportBusiness(token, supportBusinessId)
+        return ResponseEntity.ok().build()
+    }
+
+    @DeleteMapping("/support/policy/{id}/scrap")
+    @Operation(summary = "지원 정책 스크랩 취소")
+    fun deleteScrapedSupportPolicy(
+        @PathVariable("id") supportPolicyId: Long,
+        httpServletRequest: HttpServletRequest,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        val token = jwtTokenProvider.resolveToken(httpServletRequest)
+        supportService.deleteScrapedSupportPolicy(token, supportPolicyId)
+        return ResponseEntity.ok().build()
+    }
+
+    @DeleteMapping("/support/business/{id}/scrap")
+    @Operation(summary = "지원 사업 스크랩 취소")
+    fun deleteScrapedSupportBusiness(
+        @PathVariable("id") businessId: Long,
+        httpServletRequest: HttpServletRequest,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        val token = jwtTokenProvider.resolveToken(httpServletRequest)
+        supportService.deleteScrapedSupportBusiness(token, businessId)
+        return ResponseEntity.ok().build()
+    }
+
+    @DeleteMapping("/support/job/{id}/scrap")
+    @Operation(summary = "채용 공고 스크랩 취소")
+    fun deleteScrapedJobPosting(
+        @PathVariable("id") jobPostId: Long,
+        httpServletRequest: HttpServletRequest,
+    ): ResponseEntity<ApiResponse<Unit>> {
+        val token = jwtTokenProvider.resolveToken(httpServletRequest)
+        supportService.deleteScrapedJobPosting(token, jobPostId)
         return ResponseEntity.ok().build()
     }
 

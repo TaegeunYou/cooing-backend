@@ -6,5 +6,6 @@ import jakarta.persistence.Column
 class SupportPolicySummary(
     val id: Long,
     val polyBizSjnm: String? = null, //	정책명
-    val polyItcnCn: String? = null, //	정책소개
+    val polyItcnCn: String? = null, //
+    val isScraped: Boolean? = null,
 )
