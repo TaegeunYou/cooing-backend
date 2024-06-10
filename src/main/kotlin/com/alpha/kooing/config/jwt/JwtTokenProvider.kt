@@ -43,7 +43,7 @@ class JwtTokenProvider(
         return try {
             Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).payload.expiration.before(Date(System.currentTimeMillis()))
         }catch (e:Exception){
-            false
+            true
         }
     }
     fun createJwt(id:Long?, email:String, role:String, username:String, expiration:Long): String {
