@@ -40,7 +40,8 @@ class HouseService(
                     it.first == rewardType
                 }?.second ?: 0
                 count - house.items.count { it.name == rewardType.name }
-            }
+            },
+            user.isMatchingActive
         )
     }
 
