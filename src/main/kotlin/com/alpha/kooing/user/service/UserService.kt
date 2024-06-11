@@ -144,6 +144,7 @@ class UserService(
         val user = userRepository.findByEmail(userEmail).getOrNull() ?: throw Exception("로그인 유저 정보가 올바르지 않습니다.")
         // 매칭 취소 시 매칭 정보 제거
         if (!request.isMatchingActive && user.id!=null) matchUserRepository.deleteAllByUserId(user.id)
+        if (request.isMatchingActive) findOrCreateMatchUser(user.id!!)
         // 정보 갱신
         user.updateMatchingStatus(request.isMatchingActive)
         userRepository.save(user)
@@ -260,7 +261,7 @@ class UserService(
                 || (matchUser.id == user.id)
                 || (matchUser.roleType == user.roleType)
                 || (matchUserMatchingInfo != null)
-                || (!checkIkw && !checkCkw)
+//                || (!checkIkw && !checkCkw)
                 || (!matchUser.isMatchingActive)
             ) {
                 null
