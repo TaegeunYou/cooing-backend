@@ -49,7 +49,8 @@ class LoginUserManager(
                 users.remove(user.key)
                 null
             }else{
-                userRepository.findByEmail(jwtTokenProvider.getJwtEmail(token)).orElse(null).toResponseDto(
+                val signInUser = userRepository.findByEmail(jwtTokenProvider.getJwtEmail(token)).orElse(null)
+                signInUser.toResponseDto(
                     interestKeywordAll,
                     concernKeywordAll
                 )
